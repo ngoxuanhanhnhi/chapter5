@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASP.NET Core Architecture Flow</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'Inter'
+        });
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1 class="logo">ASP.NET Core <span>Architecture</span></h1>
+            <ul class="nav-links">
+                <li><a href="#routing">Routing</a></li>
+                <li><a href="#binding">Binding</a></li>
+                <li><a href="#validation">Validation</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h2>Request Life Cycle</h2>
+            <p>Visualizing the flow from JavaScript clients to ASP.NET Core Web API.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Routing Section -->
+        <section id="routing" class="diagram-section">
+            <div class="section-header">
+                <h3>1. Routing & Request Flow</h3>
+                <p>How an incoming HTTP request traverses the middleware pipeline and reaches the correct controller.</p>
+            </div>
+            <div class="card glass">
+                <div class="mermaid">
+graph TD
+    Client[Browser / Mobile App] --> Proxy[Reverse Proxy: Nginx/IIS]
+    Proxy --> Kestrel[Kestrel Web Server]
+    Kestrel --> Middleware[Middleware Pipeline]
+    
+    subgraph MiddlewarePipeline [Middleware Pipeline]
+        Exception[Exception Handling] --> HSTS[HSTS / HTTPS]
+        HSTS --> Routing[Routing Middleware]
+        Routing --> Auth[Authentication / Authorization]
+    end
+
+    Routing -- Match Found --> Controller[Controller Action]
+    Routing -- No Match --> NotFound[404 Not Found]
+    
+    Controller --> Validation[Model Validation]
+    Validation -- Valid --> Service[Business Service]
+    Validation -- Invalid --> BadRequest[400 Bad Request]
+    
+    Service --> Data[Data Access / EF Core]
+    Data --> DB[(SQL Server)]
+
+    %% Styling
+    style Client fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff
+    style DB fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
+    style MiddlewarePipeline fill:rgba(255,255,255,0.05),stroke:#6366f1,stroke-dasharray: 5 5
+                </div>
+            </div>
+        </section>
+
+        <!-- Binding Section -->
+        <section id="binding" class="diagram-section">
+            <div class="section-header">
+                <h3>2. Model Binding Flow</h3>
+                <p>Extracting raw HTTP data into strongly-typed C# objects.</p>
+            </div>
+            <div class="card glass">
+                <div class="mermaid">
+graph LR
+    Request[HTTP Request] --> Binder[Model Binder]
+    
+    subgraph DataSources [Data Sources]
+        Route[Route Data]
+        Query[Query String]
+        Body[Request Body]
+        Header[Headers]
+    end
+
+    Route --> Binder
+    Query --> Binder
+    Body --> Binder
+    Header --> Binder
+
+    Binder --> Model[C# Model Object]
+    Model --> Action[Controller Action Parameter]
+
+    %% Styling
+    style Request fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff
+    style Model fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
+    style DataSources fill:rgba(255,255,255,0.05),stroke:#6366f1,stroke-dasharray: 5 5
+                </div>
+            </div>
+        </section>
+
+        <!-- Validation Section -->
+        <section id="validation" class="diagram-section">
+            <div class="section-header">
+                <h3>3. Model Validation Flow</h3>
+                <p>Checking the bound model against validation attributes before executing business logic.</p>
+            </div>
+            <div class="card glass">
+                <div class="mermaid">
+graph TD
+    BoundModel[Bound C# Model Object] --> Validation[Validation System]
+    
+    subgraph Rules [Validation Rules]
+        Required[Required Attribute]
+        Range[Range/Length Attributes]
+        Custom[Custom Validation Logic]
+    end
+
+    Validation --> Rules
+    Rules --> Result{IsValid?}
+    
+    Result -- Yes --> Action[Execute Action Logic]
+    Result -- No --> ModelState[Populate ModelState]
+    ModelState --> Response[400 Bad Request JSON]
+
+    %% Styling
+    style BoundModel fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
+    style Result fill:#f59e0b,stroke:#fff,stroke-width:2px,color:#fff
+    style Action fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
+    style Rules fill:rgba(255,255,255,0.05),stroke:#6366f1,stroke-dasharray: 5 5
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Chapter 07 - JavaScript Clients and ASP.NET Web API Request Flow</p>
+        </div>
+    </footer>
+</body>
+</html>
