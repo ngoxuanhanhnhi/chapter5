@@ -40,6 +40,7 @@
                 <li><a href="#routing">Routing</a></li>
                 <li><a href="#binding">Binding</a></li>
                 <li><a href="#validation">Validation</a></li>
+                <li><a href="#patterns">Patterns</a></li>
             </ul>
         </div>
     </nav>
@@ -47,8 +48,7 @@
     <header class="hero">
         <div class="container">
             <h2>Request Life Cycle</h2>
-            <p>A deep dive into Routing Middleware, Model Binding sources, and the Validation Pipeline in ASP.NET Core.
-            </p>
+            <p>Comprehensive technical deep dive into ASP.NET Core: Routing, Model Binding, and Validation Pipeline.</p>
         </div>
     </header>
 
@@ -57,53 +57,54 @@
         <section id="routing" class="diagram-section">
             <div class="section-header">
                 <h3>URL Routing Engine</h3>
-                <p>Detailed flow from Middleware activation to Action selection.</p>
+                <p>Mapping URLs to executable resources via Middleware and Route Templates.</p>
             </div>
             <div class="card">
                 <div class="mermaid">
                     graph TD
-                    Start([1. HTTP Request Received]) --> UseRouting["2. UseRouting middleware"]
-                    UseRouting --> Matching{3. Template Matching}
+                    Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
+                    Middleware --> Matching{3. Pattern Matching}
 
-                    Matching -- "Attribute (Recommended)" --> Attr["4. [Route('api/[controller]')]"]
-                    Matching -- "Conventional" --> Conv["4. MapControllerRoute(...)"]
+                    Matching -- "Attribute Routing (Recommended)" --> Attr["4. [Route('orders/{id}')]"]
+                    Matching -- "Conventional Routing" --> Conv["4. MapControllerRoute(...)"]
 
-                    Attr --> UseEndpoints["5. UseEndpoints() / MapControllers()"]
+                    subgraph Dynamic_Vars [Dynamic Parameters]
+                    D1["{Id}"]
+                    D2["{Gender}/{CityId}"]
+                    end
+
+                    Attr -.-> Dynamic_Vars
+
+                    Matching --> Multi["Multiple URLs Single Resource"]
+
+                    Attr --> UseEndpoints["5. UseEndpoints() (Map to Resources)"]
                     Conv --> UseEndpoints
 
-                    UseEndpoints --> Action["6. Selected Action Method"]
+                    UseEndpoints --> Action["6. Action Method Execution"]
 
                     style Start fill:#2563eb,color:#fff
                     style Action fill:#10b981,color:#fff
+                    style Middleware fill:#4c1d95,color:#fff
                     style UseEndpoints fill:#4c1d95,color:#fff
-                    style Matching fill:#4c1d95,color:#fff
                 </div>
 
-                <div class="explanation-grid">
+                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>Routing infrastructure is responsible for parsing URL patterns and directing HTTP requests to
-                            specific endpoint handlers.</p>
+                        <p>Routing is the mechanism that maps incoming HTTP requests to specific resources or Action
+                            Methods using pattern matching.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>Workflow Steps</h4>
+                        <h4>Key Attributes & Methods</h4>
                         <ul>
-                            <li><strong>Step 1:</strong> Request enters the HTTP Request Pipeline.</li>
-                            <li><strong>Step 2:</strong> <code>UseRouting()</code> adds endpoint matching information to
-                                the request context.</li>
-                            <li><strong>Step 3-4:</strong> The engine selects either **Attribute Routing** (directly on
-                                controllers) or **Conventional Routing** (central templates).</li>
-                            <li><strong>Step 5:</strong> <code>UseEndpoints()</code> maps the matched URL to the actual
-                                resource.</li>
-                            <li><strong>Step 6:</strong> Handover to the Controller Action.</li>
-                        </ul>
-                    </div>
-                    <div class="explanation-col">
-                        <h4>Key Components</h4>
-                        <ul>
-                            <li><code>UseRouting / UseEndpoints</code></li>
-                            <li><code>[Route], [HttpGet], [HttpPost]</code></li>
-                            <li><code>EndpointRoutingMiddleware</code></li>
+                            <li><strong>UseRouting():</strong> Enables routing systems in the pipeline.</li>
+                            <li><strong>UseEndpoints():</strong> Maps URLs to actual resources (Actions/Files).</li>
+                            <li><strong>Attribute Routing:</strong> <code>[Route("api/[controller]")]</code> - The
+                                modern, recommended approach.</li>
+                            <li><strong>Dynamic Parameters:</strong> Use <code>{id}</code> or <code>{v1}/{v2}</code> for
+                                variable capture.</li>
+                            <li><strong>Multi-Route Compatibility:</strong> Single resource can be accessed by multiple
+                                templates.</li>
                         </ul>
                     </div>
                 </div>
@@ -113,55 +114,61 @@
         <!-- Binding Section -->
         <section id="binding" class="diagram-section">
             <div class="section-header">
-                <h3>Model Binding Process</h3>
-                <p>Transferring data from HTTP Sources to Action Parameters.</p>
+                <h3>Model Binding Mechanism</h3>
+                <p>Extracting request data and populating strongly-typed Action parameters.</p>
             </div>
             <div class="card">
                 <div class="mermaid">
                     flowchart LR
-                    subgraph Data_Sources [1. Data Sources]
-                    Form[Form data]
-                    Route[Route variables]
-                    Query[Query string]
-                    Body[Request body - JSON]
+                    subgraph Sources [1. Data Sources]
+                    Form[Form Data]
+                    Route[Route Variables]
+                    Query[Query Strings]
+                    Body[JSON/XML Body]
+                    Header[Headers]
                     end
 
-                    Data_Sources -- "Primitive Types" --> Primitive["2. Primitive Model Binder (URI-based)"]
-                    Data_Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
+                    Sources -- "Primitive Typess" --> Primitive["2. Primitive Model Binder (URI-based)"]
+                    Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
 
-                    Primitive --> Result["4. Bound Action Parameters"]
+                    Primitive --> Result["4. Bound Arg (int, string, bool, GUID, DateTime)"]
                     Complex --> Result
 
-                    style Data_Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                    subgraph Attributes [Source Specifiers]
+                    SR["[FromRoute]"]
+                    SQ["[FromQuery]"]
+                    SB["[FromBody]"]
+                    SF["[FromForm]"]
+                    SH["[FromHeader]"]
+                    SS["[FromServices]"]
+                    end
+
+                    Result -.-> Attributes
+
+                    style Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
                     style Primitive fill:#2563eb,color:#fff
                     style Complex fill:#4c1d95,color:#fff
                     style Result fill:#10b981,color:#fff
                 </div>
 
-                <div class="explanation-grid">
+                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>Model Binding is the process of retrieving data from an HTTP Request and assigning it to the
-                            parameters of an Action Method.</p>
+                        <p>The process where framework extracts data from HTTP Requests and provides them as arguments
+                            to Action Methods.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>Workflow Steps</h4>
+                        <h4>Key Components & Defaults</h4>
                         <ul>
-                            <li><strong>Step 1:</strong> Framework scans Form, Route, Query string, and Body.</li>
-                            <li><strong>Step 2:</strong> Simple types (int, string, bool, Guid) are usually bound from
-                                the URI.</li>
-                            <li><strong>Step 3:</strong> Objects/Classes are bound from the JSON Request Body (Complex
-                                Binders).</li>
-                            <li><strong>Step 4:</strong> Values are populated and passed into the Controller Action.
+                            <li><strong>Primitive Binders:</strong> Handles basic types (int, string, bool, GUID,
+                                DateTime) from Query/Route.</li>
+                            <li><strong>Complex Binders:</strong> Handles Objects/Classes (Entities) primarily from the
+                                JSON Body.</li>
+                            <li><strong>Binding Source Attributes:</strong>
+                                <code>[FromBody], [FromForm], [FromQuery], [FromRoute], [FromHeader], [FromServices]</code>.
                             </li>
-                        </ul>
-                    </div>
-                    <div class="explanation-col">
-                        <h4>Key Components</h4>
-                        <ul>
-                            <li><code>[FromRoute], [FromQuery], [FromBody], [FromForm]</code></li>
-                            <li><code>int, string, Guid (Primitive)</code></li>
-                            <li><code>Custom Object / Class (Complex)</code></li>
+                            <li><strong>Default Values:</strong> Providing fallback values if source is missing (e.g.,
+                                <code>0</code> for int, <code>""</code> for string).</li>
                         </ul>
                     </div>
                 </div>
@@ -172,52 +179,88 @@
         <section id="validation" class="diagram-section">
             <div class="section-header">
                 <h3>Model Validation Pipeline</h3>
-                <p>Ensuring data integrity before logic execution.</p>
+                <p>Ensuring data integrity and security through metadata-based constraints.</p>
             </div>
             <div class="card">
                 <div class="mermaid">
                     graph TD
-                    In([1. Bound Model Received]) --> Annotations["2. Check Data Annotations"]
-                    Annotations --> ModelState["3. Update ModelState"]
+                    Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
 
-                    ModelState --> Decision{4. ModelState.IsValid?}
+                    subgraph Attributes [Built-in Constraints]
+                    R["[Required]"]
+                    S["[StringLength]"]
+                    RA["[Range]"]
+                    E["[Email/Url/Phone]"]
+                    RG["[RegularExpression]"]
+                    end
 
-                    Decision -- "False" --> Bad["5. Return 400 Bad Request / Error View"]
-                    Decision -- "True" --> Success["5. Proceed to Business Logic"]
+                    DataAnnot -.-> Attributes
 
-                    style In fill:#2563eb,color:#fff
-                    style Annotations fill:#4c1d95,color:#fff
+                    DataAnnot --> UpdateState["Update ModelState Dictionary"]
+                    UpdateState --> Decision{ModelState.IsValid?}
+
+                    Decision -- "False" --> Error["400 Bad Request / Client Error"]
+                    Decision -- "True" --> Success["Proceed to Business Logic"]
+
+                    subgraph Compare [Server vs Client]
+                    SV["Server: Safe & Secure"]
+                    CL["Client: JS/jQuery (Fast UX)"]
+                    end
+
+                    Success --> SV
+                    Error --> CL
+
+                    style Model fill:#2563eb,color:#fff
+                    style DataAnnot fill:#4c1d95,color:#fff
                     style Decision fill:#4c1d95,color:#fff
-                    style Bad fill:#ef4444,color:#fff
                     style Success fill:#10b981,color:#fff
+                    style Error fill:#ef4444,color:#fff
                 </div>
 
-                <div class="explanation-grid">
+                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>Model Validation is the logic that checks if the bound data is valid (security, business
-                            rules) before it is processed by the action.</p>
+                        <p>Ensures submitted data is user-friendly and secure before processing by verifying metadata
+                            rules on the model.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>Workflow Steps</h4>
+                        <h4>ModelState & Logic</h4>
                         <ul>
-                            <li><strong>Step 1:</strong> Logic receives the model after the Binding phase.</li>
-                            <li><strong>Step 2:</strong> Metadata is scanned for attributes like <code>[Required]</code>
-                                or <code>[Range]</code>.</li>
-                            <li><strong>Step 3:</strong> <code>ModelState</code> dictionary is updated with success or
-                                error details.</li>
-                            <li><strong>Step 4:</strong> Check <code>if (!ModelState.IsValid)</code> triggers logic
-                                flow.</li>
-                            <li><strong>Step 5:</strong> Request either returns errors or executes business logic.</li>
+                            <li><strong>Data Annotations:</strong> Rules applied as attributes (Required, StringLength,
+                                Range, MaxLength).</li>
+                            <li><strong>ModelState.IsValid:</strong> Boolean check to determine if validation passed
+                                across all binders and annotations.</li>
+                            <li><strong>Server-Side:</strong> Mandatory validation for security.</li>
+                            <li><strong>Client-Side:</strong> JavaScript/jQuery validation to prevent unnecessary round
+                                trips and improve UX.</li>
                         </ul>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Patterns Section -->
+        <section id="patterns" class="diagram-section">
+            <div class="section-header">
+                <h3>Architectural Patterns</h3>
+                <p>Establishing clean, maintainable, and decoupled systems.</p>
+            </div>
+            <div class="card">
+                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                     <div class="explanation-col">
-                        <h4>Key Components</h4>
-                        <ul>
-                            <li><code>[Required], [StringLength], [EmailAddress]</code></li>
-                            <li><code>ModelState.IsValid</code></li>
-                            <li><code>System.ComponentModel.DataAnnotations</code></li>
-                        </ul>
+                        <h4><span class="badge">R</span> Repository Pattern</h4>
+                        <p>Creates an abstraction layer between data access and business logic. Promotes loose coupling
+                            and easier unit testing.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4><span class="badge">D</span> DTOs & Mappings</h4>
+                        <p><strong>Data Transfer Objects:</strong> Manipulates and returns data without exposing
+                            internal database entities directly.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4><span class="badge">A</span> AutoMapper</h4>
+                        <p>A specialized library used to automatically map properties between Entities and DTOs,
+                            reducing repetitive boilerplate code.</p>
                     </div>
                 </div>
             </div>
@@ -226,7 +269,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 ASP.NET Core Learning Hub | Technical Systems Architecture Documentation</p>
+            <p>&copy; 2026 ASP.NET Core Architecture Hub | Technical Documentation Architecture</p>
         </div>
     </footer>
 </body>
