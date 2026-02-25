@@ -4,25 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASP.NET Core Architecture Flow</title>
+    <title>ASP.NET Core Architecture: Request Life Cycle</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         mermaid.initialize({
             startOnLoad: true,
             theme: 'dark',
             securityLevel: 'loose',
-            fontFamily: 'Inter'
+            fontFamily: 'Poppins',
+            themeVariables: {
+                primaryColor: '#2563eb',
+                secondaryColor: '#4c1d95',
+                tertiaryColor: '#10b981',
+                mainBkg: 'rgba(255, 255, 255, 0.05)',
+                nodeBorder: 'rgba(255, 255, 255, 0.1)',
+                clusterBkg: 'transparent',
+                titleColor: '#f1f5f9',
+                edgeColor: '#94a3b8'
+            }
         });
     </script>
 </head>
 
 <body>
     <nav class="navbar">
-        <div class="container">
+        <div class="container" style="display: flex; align-items: center; width: 100%;">
             <h1 class="logo">ASP.NET Core <span>Architecture</span></h1>
             <ul class="nav-links">
                 <li><a href="#routing">Routing</a></li>
@@ -35,7 +47,8 @@
     <header class="hero">
         <div class="container">
             <h2>Request Life Cycle</h2>
-            <p>Visualizing the flow from JavaScript clients to ASP.NET Core Web API.</p>
+            <p>A deep dive into Routing Middleware, Model Binding sources, and the Validation Pipeline in ASP.NET Core.
+            </p>
         </div>
     </header>
 
@@ -43,46 +56,55 @@
         <!-- Routing Section -->
         <section id="routing" class="diagram-section">
             <div class="section-header">
-                <h3>1. Routing Flow (Flowchart)</h3>
-                <p>Hệ thống quyết định "đi đâu" khi nhận được một URL.</p>
+                <h3>URL Routing Engine</h3>
+                <p>Detailed flow from Middleware activation to Action selection.</p>
             </div>
-            <div class="card-grid">
-                <div class="card glass">
-                    <div class="mermaid">
-                        flowchart TD
-                        Start([Start: Nhận URL Request]) --> Step1{"1. Attribute Routing?"}
+            <div class="card">
+                <div class="mermaid">
+                    graph TD
+                    Start([1. HTTP Request Received]) --> UseRouting["2. UseRouting middleware"]
+                    UseRouting --> Matching{3. Template Matching}
 
-                        Step1 -- "Có [Route]" --> Step2["2. So khớp Attribute trên Controller/Action"]
-                        Step1 -- "Không có" --> Step3["3. Kiểm tra Conventional Routing Templates"]
+                    Matching -- "Attribute (Recommended)" --> Attr["4. [Route('api/[controller]')]"]
+                    Matching -- "Conventional" --> Conv["4. MapControllerRoute(...)"]
 
-                        Step2 --> Step4{"4. Kiểm tra Constraints"}
-                        Step3 --> Step4
+                    Attr --> UseEndpoints["5. UseEndpoints() / MapControllers()"]
+                    Conv --> UseEndpoints
 
-                        Step4 -- "id:int (Hợp lệ)" --> Step5["5. Tìm thấy Endpoint: Match"]
-                        Step4 -- "Không khớp" --> Step6([6. 404 Not Found])
+                    UseEndpoints --> Action["6. Selected Action Method"]
 
-                        Step5 --> End([Thực thi Action Method])
-
-                        style Start fill:#3b82f6,color:#fff
-                        style Step6 fill:#ef4444,color:#fff
-                        style End fill:#10b981,color:#fff
-                        style Step1 fill:#f59e0b,color:#fff
-                        style Step4 fill:#f59e0b,color:#fff
-                    </div>
+                    style Start fill:#2563eb,color:#fff
+                    style Action fill:#10b981,color:#fff
+                    style UseEndpoints fill:#4c1d95,color:#fff
+                    style Matching fill:#4c1d95,color:#fff
                 </div>
-                <div class="explanation-card glass">
-                    <h4>Chi tiết quy trình:</h4>
-                    <ol>
-                        <li><strong>Kiểm tra Attribute Routing:</strong> Ưu tiên các định nghĩa URL ngay trên
-                            Controller.</li>
-                        <li><strong>Conventional Routing:</strong> Dùng template chung trong Program.cs nếu không dùng
-                            attribute.</li>
-                        <li><strong>Route Constraints:</strong> Áp dụng ràng buộc kiểu dữ liệu (vd:
-                            <code>{id:int}</code>).</li>
-                    </ol>
-                    <div class="example">
-                        <strong>Ví dụ:</strong> <code>/api/products/5</code> -> Khớp <code>{id:int}</code> -> Vào Action
-                        Get(5).
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>Routing infrastructure is responsible for parsing URL patterns and directing HTTP requests to
+                            specific endpoint handlers.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Request enters the HTTP Request Pipeline.</li>
+                            <li><strong>Step 2:</strong> <code>UseRouting()</code> adds endpoint matching information to
+                                the request context.</li>
+                            <li><strong>Step 3-4:</strong> The engine selects either **Attribute Routing** (directly on
+                                controllers) or **Conventional Routing** (central templates).</li>
+                            <li><strong>Step 5:</strong> <code>UseEndpoints()</code> maps the matched URL to the actual
+                                resource.</li>
+                            <li><strong>Step 6:</strong> Handover to the Controller Action.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>UseRouting / UseEndpoints</code></li>
+                            <li><code>[Route], [HttpGet], [HttpPost]</code></li>
+                            <li><code>EndpointRoutingMiddleware</code></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -91,36 +113,56 @@
         <!-- Binding Section -->
         <section id="binding" class="diagram-section">
             <div class="section-header">
-                <h3>2. Model Binding (Sequence Diagram)</h3>
-                <p>Luồng dữ liệu từ HTTP Request vào đến tham số của Action.</p>
+                <h3>Model Binding Process</h3>
+                <p>Transferring data from HTTP Sources to Action Parameters.</p>
             </div>
-            <div class="card-grid">
-                <div class="card glass">
-                    <div class="mermaid">
-                        sequenceDiagram
-                        autonumber
-                        participant C as Client (Browser)
-                        participant V as Value Providers
-                        participant B as Model Binder
-                        participant A as Action Parameter
+            <div class="card">
+                <div class="mermaid">
+                    flowchart LR
+                    subgraph Data_Sources [1. Data Sources]
+                    Form[Form data]
+                    Route[Route variables]
+                    Query[Query string]
+                    Body[Request body - JSON]
+                    end
 
-                        C->>V: Gửi Request (Form, Query, Body)
-                        V->>B: 1. Thu thập dữ liệu thô (Raw Data)
-                        Note over B: 2. Type Conversion<br />(Chuyển đổi sang int, DateTime...)
-                        B->>A: 3. Gán giá trị vào Parameter
-                        Note right of A: 4. Binding Successful
-                    </div>
+                    Data_Sources -- "Primitive Types" --> Primitive["2. Primitive Model Binder (URI-based)"]
+                    Data_Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
+
+                    Primitive --> Result["4. Bound Action Parameters"]
+                    Complex --> Result
+
+                    style Data_Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                    style Primitive fill:#2563eb,color:#fff
+                    style Complex fill:#4c1d95,color:#fff
+                    style Result fill:#10b981,color:#fff
                 </div>
-                <div class="explanation-card glass">
-                    <h4>Chi tiết quy trình:</h4>
-                    <ol>
-                        <li><strong>Value Providers:</strong> Quét dữ liệu từ Form, Query String, Route, và Body.</li>
-                        <li><strong>Type Conversion:</strong> Ép kiểu từ chuỗi văn bản sang kiểu dữ liệu C#.</li>
-                        <li><strong>Parameter Mapping:</strong> Đổ dữ liệu đã xử lý vào tham số của hàm.</li>
-                    </ol>
-                    <div class="example">
-                        <strong>Ví dụ:</strong> JSON <code>{"age": 25}</code> -> Model Binder ->
-                        <code>int age = 25</code>.
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>Model Binding is the process of retrieving data from an HTTP Request and assigning it to the
+                            parameters of an Action Method.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Framework scans Form, Route, Query string, and Body.</li>
+                            <li><strong>Step 2:</strong> Simple types (int, string, bool, Guid) are usually bound from
+                                the URI.</li>
+                            <li><strong>Step 3:</strong> Objects/Classes are bound from the JSON Request Body (Complex
+                                Binders).</li>
+                            <li><strong>Step 4:</strong> Values are populated and passed into the Controller Action.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[FromRoute], [FromQuery], [FromBody], [FromForm]</code></li>
+                            <li><code>int, string, Guid (Primitive)</code></li>
+                            <li><code>Custom Object / Class (Complex)</code></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -129,42 +171,53 @@
         <!-- Validation Section -->
         <section id="validation" class="diagram-section">
             <div class="section-header">
-                <h3>3. Validation (Activity Diagram)</h3>
-                <p>Vòng đời kiểm tra tính hợp lệ của dữ liệu thông qua Data Annotations.</p>
+                <h3>Model Validation Pipeline</h3>
+                <p>Ensuring data integrity before logic execution.</p>
             </div>
-            <div class="card-grid">
-                <div class="card glass">
-                    <div class="mermaid">
-                        stateDiagram-v2
-                        [*] --> Step1: 1. Nhận Model từ Binding
-                        Step1 --> Step2: 2. Kiểm tra Data Annotations
-                        note right of Step2: [Required], [Range], [Email]
+            <div class="card">
+                <div class="mermaid">
+                    graph TD
+                    In([1. Bound Model Received]) --> Annotations["2. Check Data Annotations"]
+                    Annotations --> ModelState["3. Update ModelState"]
 
-                        Step2 --> Step3: 3. Cập nhật ModelState
+                    ModelState --> Decision{4. ModelState.IsValid?}
 
-                        state result_check <<choice>>
-                            Step3 --> result_check
+                    Decision -- "False" --> Bad["5. Return 400 Bad Request / Error View"]
+                    Decision -- "True" --> Success["5. Proceed to Business Logic"]
 
-                            result_check --> Step4: 4. IsValid = True
-                            result_check --> Step5: 4. IsValid = False
-
-                            Step4 --> End: 5. Save Data / Execute Logic
-                            Step5 --> Error: 5. Trả về View + Thông báo lỗi
-
-                            End --> [*]
-                            Error --> [*]
-                    </div>
+                    style In fill:#2563eb,color:#fff
+                    style Annotations fill:#4c1d95,color:#fff
+                    style Decision fill:#4c1d95,color:#fff
+                    style Bad fill:#ef4444,color:#fff
+                    style Success fill:#10b981,color:#fff
                 </div>
-                <div class="explanation-card glass">
-                    <h4>Chi tiết quy trình:</h4>
-                    <ol>
-                        <li><strong>Data Annotations:</strong> Kiểm tra các quy tắc gắn trên Model.</li>
-                        <li><strong>ModelState:</strong> Lưu trữ trạng thái và danh sách lỗi.</li>
-                        <li><strong>Decision:</strong> Nếu hợp lệ thì thực hiện logic, nếu không thì báo lỗi.</li>
-                    </ol>
-                    <div class="example">
-                        <strong>Ví dụ:</strong> <code>[Required]</code> cho Name -> Nếu để trống ->
-                        <code>IsValid = false</code>.
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>Model Validation is the logic that checks if the bound data is valid (security, business
+                            rules) before it is processed by the action.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Logic receives the model after the Binding phase.</li>
+                            <li><strong>Step 2:</strong> Metadata is scanned for attributes like <code>[Required]</code>
+                                or <code>[Range]</code>.</li>
+                            <li><strong>Step 3:</strong> <code>ModelState</code> dictionary is updated with success or
+                                error details.</li>
+                            <li><strong>Step 4:</strong> Check <code>if (!ModelState.IsValid)</code> triggers logic
+                                flow.</li>
+                            <li><strong>Step 5:</strong> Request either returns errors or executes business logic.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[Required], [StringLength], [EmailAddress]</code></li>
+                            <li><code>ModelState.IsValid</code></li>
+                            <li><code>System.ComponentModel.DataAnnotations</code></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -173,7 +226,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 ASP.NET Core Architecture Deep Dive - Binding, Routing & Validation</p>
+            <p>&copy; 2026 ASP.NET Core Learning Hub | Technical Systems Architecture Documentation</p>
         </div>
     </footer>
 </body>
