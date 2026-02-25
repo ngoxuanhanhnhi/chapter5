@@ -60,51 +60,59 @@
                 <p>Mapping URLs to executable resources via Middleware and Route Templates.</p>
             </div>
             <div class="card">
-                <div class="mermaid">
-                    graph TD
-                    Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
-                    Middleware --> Matching{3. Pattern Matching}
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        graph TD
+                        Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
+                        Middleware --> Matching{3. Pattern Matching}
 
-                    Matching -- "Attribute Routing (Recommended)" --> Attr["4. [Route('orders/{id}')]"]
-                    Matching -- "Conventional Routing" --> Conv["4. MapControllerRoute(...)"]
+                        Matching -- "Attribute Routing (Recommended)" --> Attr["4. [Route('orders/{id}')]"]
+                        Matching -- "Conventional Routing" --> Conv["4. MapControllerRoute(...)"]
 
-                    subgraph Dynamic_Vars [Dynamic Parameters]
-                    D1["{Id}"]
-                    D2["{Gender}/{CityId}"]
-                    end
+                        subgraph Dynamic_Vars [Dynamic Parameters]
+                        D1["{Id}"]
+                        D2["{Gender}/{CityId}"]
+                        end
 
-                    Attr -.-> Dynamic_Vars
+                        Attr -.-> Dynamic_Vars
 
-                    Matching --> Multi["Multiple URLs Single Resource"]
+                        Matching --> Multi["Multiple URLs Single Resource"]
 
-                    Attr --> UseEndpoints["5. UseEndpoints() (Map to Resources)"]
-                    Conv --> UseEndpoints
+                        Attr --> UseEndpoints["5. UseEndpoints() (Map to Resources)"]
+                        Conv --> UseEndpoints
 
-                    UseEndpoints --> Action["6. Action Method Execution"]
+                        UseEndpoints --> Action["6. Action Method Execution"]
 
-                    style Start fill:#2563eb,color:#fff
-                    style Action fill:#10b981,color:#fff
-                    style Middleware fill:#4c1d95,color:#fff
-                    style UseEndpoints fill:#4c1d95,color:#fff
+                        style Start fill:#2563eb,color:#fff
+                        style Action fill:#10b981,color:#fff
+                        style Middleware fill:#4c1d95,color:#fff
+                        style UseEndpoints fill:#4c1d95,color:#fff
+                    </div>
                 </div>
 
-                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="explanation-grid">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>Routing is the mechanism that maps incoming HTTP requests to specific resources or Action
-                            Methods using pattern matching.</p>
+                        <p>Routing infrastructure is responsible for parsing URL patterns and directing HTTP requests to
+                            specific endpoint handlers.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>Key Attributes & Methods</h4>
+                        <h4>Workflow Steps</h4>
                         <ul>
-                            <li><strong>UseRouting():</strong> Enables routing systems in the pipeline.</li>
-                            <li><strong>UseEndpoints():</strong> Maps URLs to actual resources (Actions/Files).</li>
-                            <li><strong>Attribute Routing:</strong> <code>[Route("api/[controller]")]</code> - The
-                                modern, recommended approach.</li>
-                            <li><strong>Dynamic Parameters:</strong> Use <code>{id}</code> or <code>{v1}/{v2}</code> for
-                                variable capture.</li>
-                            <li><strong>Multi-Route Compatibility:</strong> Single resource can be accessed by multiple
-                                templates.</li>
+                            <li><strong>Step 1:</strong> System receives the raw URL from the client.</li>
+                            <li><strong>Step 2:</strong> <code>UseRouting()</code> adds matching info to the request.
+                            </li>
+                            <li><strong>Step 3-4:</strong> Match URL against Attribute or Conventional templates.</li>
+                            <li><strong>Step 5:</strong> <code>UseEndpoints()</code> executes the matched handler.</li>
+                            <li><strong>Step 6:</strong> Control is handed over to the target Action Method.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>UseRouting / UseEndpoints</code></li>
+                            <li><code>[Route], [HttpGet], [HttpPost]</code></li>
+                            <li><code>EndpointRoutingMiddleware</code></li>
                         </ul>
                     </div>
                 </div>
@@ -118,57 +126,63 @@
                 <p>Extracting request data and populating strongly-typed Action parameters.</p>
             </div>
             <div class="card">
-                <div class="mermaid">
-                    flowchart LR
-                    subgraph Sources [1. Data Sources]
-                    Form[Form Data]
-                    Route[Route Variables]
-                    Query[Query Strings]
-                    Body[JSON/XML Body]
-                    Header[Headers]
-                    end
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        flowchart LR
+                        subgraph Sources [1. Data Sources]
+                        Form[Form Data]
+                        Route[Route Variables]
+                        Query[Query Strings]
+                        Body[JSON/XML Body]
+                        Header[Headers]
+                        end
 
-                    Sources -- "Primitive Typess" --> Primitive["2. Primitive Model Binder (URI-based)"]
-                    Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
+                        Sources -- "Primitive Typess" --> Primitive["2. Primitive Model Binder (URI-based)"]
+                        Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
 
-                    Primitive --> Result["4. Bound Arg (int, string, bool, GUID, DateTime)"]
-                    Complex --> Result
+                        Primitive --> Result["4. Bound Arg (int, string, bool, GUID, DateTime)"]
+                        Complex --> Result
 
-                    subgraph Attributes [Source Specifiers]
-                    SR["[FromRoute]"]
-                    SQ["[FromQuery]"]
-                    SB["[FromBody]"]
-                    SF["[FromForm]"]
-                    SH["[FromHeader]"]
-                    SS["[FromServices]"]
-                    end
+                        subgraph Attributes [Source Specifiers]
+                        SR["[FromRoute]"]
+                        SQ["[FromQuery]"]
+                        SB["[FromBody]"]
+                        SF["[FromForm]"]
+                        SH["[FromHeader]"]
+                        SS["[FromServices]"]
+                        end
 
-                    Result -.-> Attributes
+                        Result -.-> Attributes
 
-                    style Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
-                    style Primitive fill:#2563eb,color:#fff
-                    style Complex fill:#4c1d95,color:#fff
-                    style Result fill:#10b981,color:#fff
+                        style Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                        style Primitive fill:#2563eb,color:#fff
+                        style Complex fill:#4c1d95,color:#fff
+                        style Result fill:#10b981,color:#fff
+                    </div>
                 </div>
 
-                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="explanation-grid">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>The process where framework extracts data from HTTP Requests and provides them as arguments
-                            to Action Methods.</p>
+                        <p>The process of retrieving data from HTTP Request sources and mapping it to Action Method
+                            parameters.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>Key Components & Defaults</h4>
+                        <h4>Workflow Steps</h4>
                         <ul>
-                            <li><strong>Primitive Binders:</strong> Handles basic types (int, string, bool, GUID,
-                                DateTime) from Query/Route.</li>
-                            <li><strong>Complex Binders:</strong> Handles Objects/Classes (Entities) primarily from the
-                                JSON Body.</li>
-                            <li><strong>Binding Source Attributes:</strong>
-                                <code>[FromBody], [FromForm], [FromQuery], [FromRoute], [FromHeader], [FromServices]</code>.
-                            </li>
-                            <li><strong>Default Values:</strong> Providing fallback values if source is missing (e.g.,
-                                <code>0</code> for int, <code>""</code> for string).</li>
+                            <li><strong>Step 1:</strong> Data is scanned from Body, Forms, Route, or Query.</li>
+                            <li><strong>Step 2:</strong> Primitive Binders handle simple types from the URI.</li>
+                            <li><strong>Step 3:</strong> Complex Binders handle JSON/XML objects from the Body.</li>
+                            <li><strong>Step 4:</strong> Binders populate the target C# objects.</li>
+                            <li><strong>Step 5:</strong> The action receives fully-typed parameters.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[FromBody], [FromQuery], [FromRoute]</code></li>
+                            <li><code>IModelBinder / ValueProviders</code></li>
+                            <li><code>Default Value Handling</code></li>
                         </ul>
                     </div>
                 </div>
@@ -182,57 +196,66 @@
                 <p>Ensuring data integrity and security through metadata-based constraints.</p>
             </div>
             <div class="card">
-                <div class="mermaid">
-                    graph TD
-                    Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        graph TD
+                        Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
 
-                    subgraph Attributes [Built-in Constraints]
-                    R["[Required]"]
-                    S["[StringLength]"]
-                    RA["[Range]"]
-                    E["[Email/Url/Phone]"]
-                    RG["[RegularExpression]"]
-                    end
+                        subgraph Attributes [Built-in Constraints]
+                        R["[Required]"]
+                        S["[StringLength]"]
+                        RA["[Range]"]
+                        E["[Email/Url/Phone]"]
+                        RG["[RegularExpression]"]
+                        end
 
-                    DataAnnot -.-> Attributes
+                        DataAnnot -.-> Attributes
 
-                    DataAnnot --> UpdateState["Update ModelState Dictionary"]
-                    UpdateState --> Decision{ModelState.IsValid?}
+                        DataAnnot --> UpdateState["Update ModelState Dictionary"]
+                        UpdateState --> Decision{ModelState.IsValid?}
 
-                    Decision -- "False" --> Error["400 Bad Request / Client Error"]
-                    Decision -- "True" --> Success["Proceed to Business Logic"]
+                        Decision -- "False" --> Error["400 Bad Request / Client Error"]
+                        Decision -- "True" --> Success["Proceed to Business Logic"]
 
-                    subgraph Compare [Server vs Client]
-                    SV["Server: Safe & Secure"]
-                    CL["Client: JS/jQuery (Fast UX)"]
-                    end
+                        subgraph Compare [Server vs Client]
+                        SV["Server: Safe & Secure"]
+                        CL["Client: JS/jQuery (Fast UX)"]
+                        end
 
-                    Success --> SV
-                    Error --> CL
+                        Success --> SV
+                        Error --> CL
 
-                    style Model fill:#2563eb,color:#fff
-                    style DataAnnot fill:#4c1d95,color:#fff
-                    style Decision fill:#4c1d95,color:#fff
-                    style Success fill:#10b981,color:#fff
-                    style Error fill:#ef4444,color:#fff
+                        style Model fill:#2563eb,color:#fff
+                        style DataAnnot fill:#4c1d95,color:#fff
+                        style Decision fill:#4c1d95,color:#fff
+                        style Success fill:#10b981,color:#fff
+                        style Error fill:#ef4444,color:#fff
+                    </div>
                 </div>
 
-                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="explanation-grid">
                     <div class="explanation-col">
                         <h4>Definition</h4>
-                        <p>Ensures submitted data is user-friendly and secure before processing by verifying metadata
-                            rules on the model.</p>
+                        <p>Validation ensures that submitted data complies with security and business rules before
+                            execution.</p>
                     </div>
                     <div class="explanation-col">
-                        <h4>ModelState & Logic</h4>
+                        <h4>Workflow Steps</h4>
                         <ul>
-                            <li><strong>Data Annotations:</strong> Rules applied as attributes (Required, StringLength,
-                                Range, MaxLength).</li>
-                            <li><strong>ModelState.IsValid:</strong> Boolean check to determine if validation passed
-                                across all binders and annotations.</li>
-                            <li><strong>Server-Side:</strong> Mandatory validation for security.</li>
-                            <li><strong>Client-Side:</strong> JavaScript/jQuery validation to prevent unnecessary round
-                                trips and improve UX.</li>
+                            <li><strong>Step 1:</strong> Validator receives the model after binding success.</li>
+                            <li><strong>Step 2:</strong> Class is scanned for Data Annotation attributes.</li>
+                            <li><strong>Step 3:</strong> Errors are populated into the <code>ModelState</code>
+                                dictionary.</li>
+                            <li><strong>Step 4:</strong> Code evaluates <code>ModelState.IsValid</code> status.</li>
+                            <li><strong>Step 5:</strong> Returns 400 Bad Request or proceeds to logic.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[Required], [Range], [StringLength]</code></li>
+                            <li><code>ModelStateDictionary / IsValid</code></li>
+                            <li><code>Client-side (Unobtrusive JS)</code></li>
                         </ul>
                     </div>
                 </div>
@@ -246,7 +269,7 @@
                 <p>Establishing clean, maintainable, and decoupled systems.</p>
             </div>
             <div class="card">
-                <div class="explanation-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="explanation-grid">
                     <div class="explanation-col">
                         <h4><span class="badge">R</span> Repository Pattern</h4>
                         <p>Creates an abstraction layer between data access and business logic. Promotes loose coupling
