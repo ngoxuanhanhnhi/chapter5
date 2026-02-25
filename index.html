@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASP.NET Core Architecture: Request Life Cycle</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -37,10 +38,11 @@
         <div class="container" style="display: flex; align-items: center; width: 100%;">
             <h1 class="logo">ASP.NET Core <span>Architecture</span></h1>
             <ul class="nav-links">
-                <li><a href="#routing">Routing</a></li>
-                <li><a href="#binding">Binding</a></li>
-                <li><a href="#validation">Validation</a></li>
-                <li><a href="#patterns">Patterns</a></li>
+                <li><a href="#overview"><i class="fas fa-globe"></i> Overview</a></li>
+                <li><a href="#routing"><i class="fas fa-link"></i> Routing</a></li>
+                <li><a href="#binding"><i class="fas fa-puzzle-piece"></i> Binding</a></li>
+                <li><a href="#validation"><i class="fas fa-shield-halved"></i> Validation</a></li>
+                <li><a href="#patterns"><i class="fas fa-layer-group"></i> Patterns</a></li>
             </ul>
         </div>
     </nav>
@@ -53,6 +55,91 @@
     </header>
 
     <main class="container">
+        <!-- Pipeline Overview Section -->
+        <section id="overview" class="overview-section">
+            <div class="section-header">
+                <h3>ASP.NET Core Request Processing Pipeline</h3>
+                <p>The integrated flow where a URL request is directed to an endpoint, data is extracted from sources,
+                    and then verified for integrity before processing.</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--primary);">
+                <div class="mermaid-container">
+                    <div class="mermaid">
+                        graph TD
+                        %% Nodes
+                        Globe["HTTP Request"]
+                        Step1["Step 1: UseRouting()"]
+                        Routing["Routing Match<br />(Controller & Action)"]
+                        Step2["Step 2: Model Binding"]
+                        Step3["Step 3: Model Validation"]
+                        Step4{"Step 4: Gatekeeper<br />ModelState.IsValid?"}
+                        Step5["Step 5: Controller Action<br />(Process Logic)"]
+                        Error["400 Bad Request<br />(Invalid Data)"]
+                        Response["HTTP Response"]
+
+                        %% Flow
+                        Globe --> Step1
+                        Step1 --> Routing
+                        Routing --> Step2
+                        Step2 --> Step3
+                        Step3 --> Step4
+
+                        Step4 -- "False" --> Error
+                        Step4 -- "True" --> Step5
+
+                        Step5 --> Response
+                        Error --> Response
+                        Response --> Globe
+
+                        %% Detailed Styling
+                        style Globe fill:#f8fafc,stroke:#94a3b8
+                        style Step1 fill:#eef2ff,stroke:#002366,color:#002366
+                        style Routing fill:#f8fafc,stroke:#cbd5e1
+                        style Step2 fill:#f5f3ff,stroke:#4b0082,color:#4b0082
+                        style Step3 fill:#fff7ed,stroke:#ff4500,color:#ff4500
+                        style Step4 fill:#fffbeb,stroke:#f59e0b
+                        style Step5 fill:#f0fdf4,stroke:#10b981,color:#10b981
+                        style Error fill:#fee2e2,stroke:#ef4444,color:#ef4444
+                        style Response fill:#f1f5f9,stroke:#94a3b8
+                    </div>
+                </div>
+
+                <div class="explanation-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">1</span> <i class="fas fa-link"></i> Routing</h4>
+                        <p><strong>UseRouting()</strong> identifies the correct path. It compares the incoming URL
+                            against defined templates to select the target <strong>Controller & Action</strong>.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">2</span> <i class="fas fa-puzzle-piece"></i> Model Binding</h4>
+                        <p>Data is extracted from <strong>Route, Query, Form, or Body</strong>. The system automatically
+                            maps these raw values into strongly-typed C# <strong>Action Parameters</strong>.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">3</span> <i class="fas fa-shield-halved"></i> Model Validation</h4>
+                        <p>The system evaluates <strong>DataAnnotations</strong> (like [Required], [Email]) to ensure
+                            the model matches the expected business rules and integrity constraints.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">4</span> <i class="fas fa-door-open"></i> Gatekeeper</h4>
+                        <p>Checks <strong>ModelState.IsValid</strong>. If validation fails (False), it triggers a
+                            <strong>400 Bad Request</strong>. If successful (True), it proceeds to the core logic
+                            handler.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">5</span> <i class="fas fa-code"></i> Controller Action</h4>
+                        <p>The final destination where <strong>Business Logic</strong> is executed, interacting with
+                            services or databases to generate the final <strong>HTTP Response</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
         <!-- Routing Section -->
         <section id="routing" class="diagram-section">
             <div class="section-header">

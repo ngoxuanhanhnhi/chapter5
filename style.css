@@ -1,10 +1,16 @@
 :root {
-    --primary: #2563eb;
+    /* Enterprise Color Palette - Solution Architect Specs */
+    --routing-blue: #002366;
     /* Royal Blue */
-    --secondary: #4c1d95;
+    --binding-purple: #4b0082;
     /* Deep Purple */
-    --accent: #10b981;
-    /* Mint Green */
+    --validation-orange: #ff4500;
+    /* Vibrant Orange (Orange-Red for impact) */
+    --success-green: #10b981;
+    --error-red: #ef4444;
+    --primary: #3b82f6;
+    /* Global Blue for Badges */
+    --badge-size: 28px;
     --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
     --badge-bg: #4c1d95;
     --accent: #10b981;
@@ -135,12 +141,43 @@ body {
     transform: translateY(-5px);
 }
 
-/* Explanation Layout (3 Columns) */
+/* Explanation Layout */
 .explanation-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
-    margin-top: 1rem;
+    margin-top: 2rem;
+}
+
+.overview-section .explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.explanation-col {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--badge-size);
+    height: var(--badge-size);
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-right: 0.75rem;
+    color: white;
+}
+
+.badge.blue {
+    background: var(--primary);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
 @media (max-width: 900px) {
