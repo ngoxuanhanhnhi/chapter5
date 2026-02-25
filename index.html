@@ -43,36 +43,29 @@
         <!-- Routing Section -->
         <section id="routing" class="diagram-section">
             <div class="section-header">
-                <h3>1. Routing & Request Flow</h3>
-                <p>How an incoming HTTP request traverses the middleware pipeline and reaches the correct controller.
-                </p>
+                <h3>1. Routing Flow</h3>
+                <p>How the system decides "where to go" when an HTTP request arrives.</p>
             </div>
             <div class="card glass">
                 <div class="mermaid">
-                    graph TD
-                    Client["Browser / Mobile App"] --> Proxy["Reverse Proxy: Nginx/IIS"]
-                    Proxy --> Kestrel["Kestrel Web Server"]
-                    Kestrel --> Middleware["Middleware Pipeline"]
+                    flowchart TD
+                    Start([Start: URL Reception]) --> AttrCheck{"Attribute Routing?"}
+                    AttrCheck -- "Yes" --> MatchAttr["Match [Route] on Controller/Action"]
+                    AttrCheck -- "No" --> ConvCheck["Check Conventional Routing Templates"]
 
-                    subgraph MiddlewarePipeline ["Middleware Pipeline"]
-                    Exception["Exception Handling"] --> HSTS["HSTS / HTTPS"]
-                    HSTS --> Routing["Routing Middleware"]
-                    Routing --> Auth["Authentication / Authorization"]
-                    end
+                    MatchAttr --> Constraints{"Match Constraints?"}
+                    ConvCheck --> Constraints
 
-                    Routing -- "Match Found" --> Controller["Controller Action"]
-                    Routing -- "No Match" --> NotFound["404 Not Found"]
+                    Constraints -- "id:int, etc." --> Endpoint["Endpoint Selected"]
+                    Constraints -- "No Match" --> NotFound([404 Not Found])
 
-                    Controller --> Validation["Model Validation"]
-                    Validation -- "Valid" --> Service["Business Service"]
-                    Validation -- "Invalid" --> BadRequest["400 Bad Request"]
+                    Endpoint --> Action["Execute Action Method"]
 
-                    Service --> Data["Data Access / EF Core"]
-                    Data --> DB[("SQL Server")]
-
-                    style Client fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff
-                    style DB fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
-                    style MiddlewarePipeline fill:#1e293b,stroke:#6366f1,stroke-dasharray:5,5
+                    style Start fill:#3b82f6,color:#fff
+                    style NotFound fill:#ef4444,color:#fff
+                    style Action fill:#10b981,color:#fff
+                    style AttrCheck fill:#f59e0b,color:#fff
+                    style Constraints fill:#f59e0b,color:#fff
                 </div>
             </div>
         </section>
@@ -81,31 +74,21 @@
         <section id="binding" class="diagram-section">
             <div class="section-header">
                 <h3>2. Model Binding Flow</h3>
-                <p>Extracting raw HTTP data into strongly-typed C# objects.</p>
+                <p>Transferring data from HTTP requests into Action Method parameters.</p>
             </div>
             <div class="card glass">
                 <div class="mermaid">
-                    graph LR
-                    Request["HTTP Request"] --> Binder["Model Binder"]
+                    sequenceDiagram
+                    participant C as Client
+                    participant M as Middleware/Value Providers
+                    participant B as Model Binder
+                    participant A as Action Method Parameter
 
-                    subgraph DataSources ["Data Sources"]
-                    Route["Route Data"]
-                    Query["Query String"]
-                    Body["Request Body"]
-                    Header["Headers"]
-                    end
-
-                    Route --> Binder
-                    Query --> Binder
-                    Body --> Binder
-                    Header --> Binder
-
-                    Binder --> Model["C# Model Object"]
-                    Model --> Action["Controller Action Parameter"]
-
-                    style Request fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff
-                    style Model fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
-                    style DataSources fill:#1e293b,stroke:#6366f1,stroke-dasharray:5,5
+                    C->>M: Send HTTP Request (Form/Query/Body)
+                    M->>B: Provide Raw Data (Value Providers)
+                    Note over B: Type Conversion (int, DateTime, etc.)
+                    B->>A: Map Data to Parameter
+                    Note right of A: Binding Successful
                 </div>
             </div>
         </section>
@@ -114,30 +97,25 @@
         <section id="validation" class="diagram-section">
             <div class="section-header">
                 <h3>3. Model Validation Flow</h3>
-                <p>Checking the bound model against validation attributes before executing business logic.</p>
+                <p>The lifecycle of ensuring data integrity using Data Annotations.</p>
             </div>
             <div class="card glass">
                 <div class="mermaid">
-                    graph TD
-                    BoundModel["Bound C# Model Object"] --> Validation["Validation System"]
+                    stateDiagram-v2
+                    [*] --> Received: Model from Binding
+                    Received --> Checking: Scan Data Annotations
+                    Checking --> ModelState: Populate ModelState
 
-                    subgraph Rules ["Validation Rules"]
-                    Required["Required Attribute"]
-                    Range["Range/Length Attributes"]
-                    Custom["Custom Validation Logic"]
-                    end
+                    state result_check <<choice>>
+                        ModelState --> result_check
 
-                    Validation --> Rules
-                    Rules --> Result{IsValid?}
+                        result_check --> SaveData: IsValid = True
+                        result_check --> ReturnView: IsValid = False
 
-                    Result -- "Yes" --> Action["Execute Action Logic"]
-                    Result -- "No" --> ModelState["Populate ModelState"]
-                    ModelState --> Response["400 Bad Request JSON"]
+                        SaveData --> [*]: Success
+                        ReturnView --> [*]: Return Errors to User
 
-                    style BoundModel fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
-                    style Result fill:#f59e0b,stroke:#fff,stroke-width:2px,color:#fff
-                    style Action fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
-                    style Rules fill:#1e293b,stroke:#6366f1,stroke-dasharray:5,5
+                        note right of Received: [Required], [Range], etc.
                 </div>
             </div>
         </section>
