@@ -43,29 +43,47 @@
         <!-- Routing Section -->
         <section id="routing" class="diagram-section">
             <div class="section-header">
-                <h3>1. Routing Flow</h3>
-                <p>How the system decides "where to go" when an HTTP request arrives.</p>
+                <h3>1. Routing Flow (Flowchart)</h3>
+                <p>Hệ thống quyết định "đi đâu" khi nhận được một URL.</p>
             </div>
-            <div class="card glass">
-                <div class="mermaid">
-                    flowchart TD
-                    Start([Start: URL Reception]) --> AttrCheck{"Attribute Routing?"}
-                    AttrCheck -- "Yes" --> MatchAttr["Match [Route] on Controller/Action"]
-                    AttrCheck -- "No" --> ConvCheck["Check Conventional Routing Templates"]
+            <div class="card-grid">
+                <div class="card glass">
+                    <div class="mermaid">
+                        flowchart TD
+                        Start([Start: Nhận URL Request]) --> Step1{"1. Attribute Routing?"}
 
-                    MatchAttr --> Constraints{"Match Constraints?"}
-                    ConvCheck --> Constraints
+                        Step1 -- "Có [Route]" --> Step2["2. So khớp Attribute trên Controller/Action"]
+                        Step1 -- "Không có" --> Step3["3. Kiểm tra Conventional Routing Templates"]
 
-                    Constraints -- "id:int, etc." --> Endpoint["Endpoint Selected"]
-                    Constraints -- "No Match" --> NotFound([404 Not Found])
+                        Step2 --> Step4{"4. Kiểm tra Constraints"}
+                        Step3 --> Step4
 
-                    Endpoint --> Action["Execute Action Method"]
+                        Step4 -- "id:int (Hợp lệ)" --> Step5["5. Tìm thấy Endpoint: Match"]
+                        Step4 -- "Không khớp" --> Step6([6. 404 Not Found])
 
-                    style Start fill:#3b82f6,color:#fff
-                    style NotFound fill:#ef4444,color:#fff
-                    style Action fill:#10b981,color:#fff
-                    style AttrCheck fill:#f59e0b,color:#fff
-                    style Constraints fill:#f59e0b,color:#fff
+                        Step5 --> End([Thực thi Action Method])
+
+                        style Start fill:#3b82f6,color:#fff
+                        style Step6 fill:#ef4444,color:#fff
+                        style End fill:#10b981,color:#fff
+                        style Step1 fill:#f59e0b,color:#fff
+                        style Step4 fill:#f59e0b,color:#fff
+                    </div>
+                </div>
+                <div class="explanation-card glass">
+                    <h4>Chi tiết quy trình:</h4>
+                    <ol>
+                        <li><strong>Kiểm tra Attribute Routing:</strong> Ưu tiên các định nghĩa URL ngay trên
+                            Controller.</li>
+                        <li><strong>Conventional Routing:</strong> Dùng template chung trong Program.cs nếu không dùng
+                            attribute.</li>
+                        <li><strong>Route Constraints:</strong> Áp dụng ràng buộc kiểu dữ liệu (vd:
+                            <code>{id:int}</code>).</li>
+                    </ol>
+                    <div class="example">
+                        <strong>Ví dụ:</strong> <code>/api/products/5</code> -> Khớp <code>{id:int}</code> -> Vào Action
+                        Get(5).
+                    </div>
                 </div>
             </div>
         </section>
@@ -73,22 +91,37 @@
         <!-- Binding Section -->
         <section id="binding" class="diagram-section">
             <div class="section-header">
-                <h3>2. Model Binding Flow</h3>
-                <p>Transferring data from HTTP requests into Action Method parameters.</p>
+                <h3>2. Model Binding (Sequence Diagram)</h3>
+                <p>Luồng dữ liệu từ HTTP Request vào đến tham số của Action.</p>
             </div>
-            <div class="card glass">
-                <div class="mermaid">
-                    sequenceDiagram
-                    participant C as Client
-                    participant M as Middleware/Value Providers
-                    participant B as Model Binder
-                    participant A as Action Method Parameter
+            <div class="card-grid">
+                <div class="card glass">
+                    <div class="mermaid">
+                        sequenceDiagram
+                        autonumber
+                        participant C as Client (Browser)
+                        participant V as Value Providers
+                        participant B as Model Binder
+                        participant A as Action Parameter
 
-                    C->>M: Send HTTP Request (Form/Query/Body)
-                    M->>B: Provide Raw Data (Value Providers)
-                    Note over B: Type Conversion (int, DateTime, etc.)
-                    B->>A: Map Data to Parameter
-                    Note right of A: Binding Successful
+                        C->>V: Gửi Request (Form, Query, Body)
+                        V->>B: 1. Thu thập dữ liệu thô (Raw Data)
+                        Note over B: 2. Type Conversion<br />(Chuyển đổi sang int, DateTime...)
+                        B->>A: 3. Gán giá trị vào Parameter
+                        Note right of A: 4. Binding Successful
+                    </div>
+                </div>
+                <div class="explanation-card glass">
+                    <h4>Chi tiết quy trình:</h4>
+                    <ol>
+                        <li><strong>Value Providers:</strong> Quét dữ liệu từ Form, Query String, Route, và Body.</li>
+                        <li><strong>Type Conversion:</strong> Ép kiểu từ chuỗi văn bản sang kiểu dữ liệu C#.</li>
+                        <li><strong>Parameter Mapping:</strong> Đổ dữ liệu đã xử lý vào tham số của hàm.</li>
+                    </ol>
+                    <div class="example">
+                        <strong>Ví dụ:</strong> JSON <code>{"age": 25}</code> -> Model Binder ->
+                        <code>int age = 25</code>.
+                    </div>
                 </div>
             </div>
         </section>
@@ -96,26 +129,43 @@
         <!-- Validation Section -->
         <section id="validation" class="diagram-section">
             <div class="section-header">
-                <h3>3. Model Validation Flow</h3>
-                <p>The lifecycle of ensuring data integrity using Data Annotations.</p>
+                <h3>3. Validation (Activity Diagram)</h3>
+                <p>Vòng đời kiểm tra tính hợp lệ của dữ liệu thông qua Data Annotations.</p>
             </div>
-            <div class="card glass">
-                <div class="mermaid">
-                    stateDiagram-v2
-                    [*] --> Received: Model from Binding
-                    Received --> Checking: Scan Data Annotations
-                    Checking --> ModelState: Populate ModelState
+            <div class="card-grid">
+                <div class="card glass">
+                    <div class="mermaid">
+                        stateDiagram-v2
+                        [*] --> Step1: 1. Nhận Model từ Binding
+                        Step1 --> Step2: 2. Kiểm tra Data Annotations
+                        note right of Step2: [Required], [Range], [Email]
 
-                    state result_check <<choice>>
-                        ModelState --> result_check
+                        Step2 --> Step3: 3. Cập nhật ModelState
 
-                        result_check --> SaveData: IsValid = True
-                        result_check --> ReturnView: IsValid = False
+                        state result_check <<choice>>
+                            Step3 --> result_check
 
-                        SaveData --> [*]: Success
-                        ReturnView --> [*]: Return Errors to User
+                            result_check --> Step4: 4. IsValid = True
+                            result_check --> Step5: 4. IsValid = False
 
-                        note right of Received: [Required], [Range], etc.
+                            Step4 --> End: 5. Save Data / Execute Logic
+                            Step5 --> Error: 5. Trả về View + Thông báo lỗi
+
+                            End --> [*]
+                            Error --> [*]
+                    </div>
+                </div>
+                <div class="explanation-card glass">
+                    <h4>Chi tiết quy trình:</h4>
+                    <ol>
+                        <li><strong>Data Annotations:</strong> Kiểm tra các quy tắc gắn trên Model.</li>
+                        <li><strong>ModelState:</strong> Lưu trữ trạng thái và danh sách lỗi.</li>
+                        <li><strong>Decision:</strong> Nếu hợp lệ thì thực hiện logic, nếu không thì báo lỗi.</li>
+                    </ol>
+                    <div class="example">
+                        <strong>Ví dụ:</strong> <code>[Required]</code> cho Name -> Nếu để trống ->
+                        <code>IsValid = false</code>.
+                    </div>
                 </div>
             </div>
         </section>
@@ -123,7 +173,7 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 Chapter 07 - JavaScript Clients and ASP.NET Web API Request Flow</p>
+            <p>&copy; 2026 ASP.NET Core Architecture Deep Dive - Binding, Routing & Validation</p>
         </div>
     </footer>
 </body>

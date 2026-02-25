@@ -1,0 +1,50 @@
+GIẢI THÍCH KIẾN TRÚC BINDING - ROUTING - VALIDATION TRONG ASP.NET CORE
+
+1. ROUTING (ĐIỀU HƯỚNG)
+- Định nghĩa: Routing là cơ chế ánh xạ một URL đến một Endpoint (thường là một Action Method trong Controller). Nó quyết định thành phần nào của code sẽ xử lý yêu cầu HTTP.
+- Các bước thực hiện:
+    1. Tiếp nhận URL: Hệ thống nhận URL từ Request (ví dụ: /api/products/5).
+    2. Kiểm tra Attribute Routing: Quét các thuộc tính [Route] hoặc [HttpGet] trên Controller/Action. Nếu khớp, URL sẽ được gán cho Action đó ngay lập tức.
+    3. Kiểm tra Conventional Routing: Nếu không dùng Attribute Routing, hệ thống kiểm tra các Template (ví dụ: {controller}/{action}/{id?}) định nghĩa trong Program.cs.
+    4. Kiểm tra Constraints: Áp dụng các ràng buộc kiểu dữ liệu (ví dụ: id:int). Nếu tham số không phải là số nguyên, nó sẽ bỏ qua để tìm template khác.
+    5. Kết quả: Nếu tìm thấy Endpoint phù hợp, yêu cầu được chuyển đến Action Method. Nếu không, trả về lỗi 404 Not Found.
+- Ví dụ thực tế: 
+    URL: https://shop.com/api/products/100
+    Hệ thống tìm thấy [Route("api/[controller]")] trên ProductController và [HttpGet("{id:int}")] trên Action GetProduct. Vì "100" là số nguyên (int), nó khớp hoàn toàn.
+
+2. MODEL BINDING (RÀNG BUỘC DỮ LIỆU)
+- Định nghĩa: Model Binding là quá trình trích xuất dữ liệu thô từ HTTP Request (Form, Query, Body, Headers) và tự động chuyển đổi chúng sang các tham số hoặc Model của Action Method.
+- Các bước thực hiện:
+    1. Tiếp nhận Request: Client gửi dữ liệu qua các nguồn khác nhau.
+    2. Value Providers: Thu thập dữ liệu thô từ:
+        - Form Fields (Dữ liệu form POST)
+        - Route Values (Ví dụ: id=100 từ URL)
+        - Query String (Ví dụ: ?name=test)
+        - Request Body (Dữ liệu JSON từ Fetch/Axios)
+    3. Type Conversion: Model Binder thực hiện ép kiểu từ chuỗi văn bản sang kiểu mong muốn (int, DateTime, Boolean, hoặc Model tùy chỉnh).
+    4. Mapping: Gán các giá trị đã chuyển đổi vào từng thuộc tính (Property) của tham số trong Action Method.
+- Ví dụ thực tế:
+    Action: BuildProduct(Product model)
+    Request Body gửi JSON: {"Name": "iPhone", "Price": 1000}.
+    Model Binder tạo một đối tượng Product mới, gán "iPhone" vào thuộc tính Name và số 1000 vào thuộc tính Price.
+
+3. VALIDATION (KIỂM TRA TÍNH HỢP LỆ)
+- Định nghĩa: Là bước kiểm tra xem dữ liệu đã bind vào Model có thỏa mãn các quy tắc nghiệp vụ đã định nghĩa (thông qua Data Annotations) hay không.
+- Các bước thực hiện:
+    1. Nhận Model: Sau khi Binding hoàn tất, hệ thống bắt đầu kiểm tra Model.
+    2. Kiểm tra Data Annotations: Duyệt qua các thuộc tính có gắn [Required], [Range], [EmailAddress],...
+    3. Cập nhật ModelState: Kết quả kiểm tra (Lỗi hoặc Thành công) được ghi vào đối tượng ModelState.
+    4. Nhánh điều hướng (Decision):
+        - Nếu ModelState.IsValid = True: Thực hiện logic chính (Lưu database, xử lý nghiệp vụ).
+        - Nếu ModelState.IsValid = False: Dừng xử lý và trả về thông báo lỗi chi tiết cho Client.
+- Ví dụ thực tế:
+    Model thuộc tính Price có [Range(1, 10000)].
+    Nếu người dùng nhập Price = -5:
+    Binding vẫn thành công (vì -5 là số), nhưng Validation sẽ thất bại. ModelState sẽ chứa lỗi "The field Price must be between 1 and 10000."
+
+TỔNG KẾT: MỐI LIÊN HỆ TRONG VÒNG ĐỜI REQUEST
+Vòng đời của một Request diễn ra theo chuỗi logic tuần tự:
+1. ROUTING tìm đúng "cánh cửa" (Action Method) để đi vào.
+2. MODEL BINDING chuẩn bị "đồ đạc" (Dữ liệu) cần thiết cho Action đó.
+3. VALIDATION kiểm tra xem "đồ đạc" đó có đúng quy cách không trước khi Action "sử dụng" chúng.
+=> Cả 3 đảm bảo Action Method chỉ tập trung vào logic nghiệp vụ mà không cần lo lắng về việc lấy dữ liệu từ đâu hay dữ liệu có đúng định dạng không.
