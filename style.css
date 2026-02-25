@@ -491,6 +491,7 @@ body {
 .mermaid {
     font-size: 20px;
 }
+
 /* Responsive */
 @media (max-width: 900px) {
     .explanation-grid {

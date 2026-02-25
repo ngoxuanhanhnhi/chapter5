@@ -65,42 +65,36 @@
             <div class="card" style="border-top: 4px solid var(--primary);">
                 <div class="mermaid-container">
                     <div class="mermaid">
-                        graph TD
+                        %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 70, 'rankSpacing': 80}}}%%
+                        flowchart TD
                         %% Nodes
-                        Globe["HTTP Request"]
+                        Globe(["HTTP Request"])
                         Step1["Step 1: UseRouting()"]
-                        Routing["Routing Match<br />(Controller & Action)"]
+                        Routing["Routing Match<br/>(Controller & Action)"]
                         Step2["Step 2: Model Binding"]
                         Step3["Step 3: Model Validation"]
-                        Step4{"Step 4: Gatekeeper<br />ModelState.IsValid?"}
-                        Step5["Step 5: Controller Action<br />(Process Logic)"]
-                        Error["400 Bad Request<br />(Invalid Data)"]
-                        Response["HTTP Response"]
+                        Step4{"Step 4: Gatekeeper<br/>ModelState.IsValid?"}
+                        Step5["Step 5: Controller Action<br/>(Process Logic)"]
+                        Error["400 Bad Request<br/>(Invalid Data)"]
+                        Response(["HTTP Response"])
 
                         %% Flow
-                        Globe --> Step1
-                        Step1 --> Routing
-                        Routing --> Step2
-                        Step2 --> Step3
-                        Step3 --> Step4
-
+                        Globe --> Step1 --> Routing --> Step2 --> Step3 --> Step4
                         Step4 -- "False" --> Error
                         Step4 -- "True" --> Step5
-
                         Step5 --> Response
                         Error --> Response
-                        Response --> Globe
 
                         %% Detailed Styling
-                        style Globe fill:#f8fafc,stroke:#94a3b8
+                        style Globe fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
                         style Step1 fill:#eef2ff,stroke:#002366,color:#002366
-                        style Routing fill:#f8fafc,stroke:#cbd5e1
+                        style Routing fill:#020617,stroke:#475569,color:#e2e8f0
                         style Step2 fill:#f5f3ff,stroke:#4b0082,color:#4b0082
                         style Step3 fill:#fff7ed,stroke:#ff4500,color:#ff4500
-                        style Step4 fill:#fffbeb,stroke:#f59e0b
-                        style Step5 fill:#f0fdf4,stroke:#10b981,color:#10b981
-                        style Error fill:#fee2e2,stroke:#ef4444,color:#ef4444
-                        style Response fill:#f1f5f9,stroke:#94a3b8
+                        style Step4 fill:#fffbeb,stroke:#f59e0b,color:#92400e
+                        style Step5 fill:#022c22,stroke:#10b981,color:#bbf7d0
+                        style Error fill:#450a0a,stroke:#ef4444,color:#fecaca
+                        style Response fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
                     </div>
                 </div>
 
