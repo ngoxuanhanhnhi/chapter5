@@ -484,6 +484,10 @@ body {
     text-align: center;
     color: var(--text-muted);
 }
+.mermaid svg {
+    width: 100% !important;
+    height: auto !important;
+}
 
 /* Responsive */
 @media (max-width: 900px) {
