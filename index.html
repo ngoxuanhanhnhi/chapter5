@@ -215,22 +215,28 @@
             <div class="card">
                 <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
                     <div class="mermaid" style="width: 100%; max-width: 800px;">
-                        flowchart LR
-                        subgraph Sources [1. Data Sources]
-                        Form[Form Data]
-                        Route[Route Variables]
-                        Query[Query Strings]
-                        Body[JSON/XML Body]
-                        Header[Headers]
+                        %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 70}}}%%
+                        flowchart TD
+                        %% 1. Data Sources
+                        subgraph Sources["1. Data Sources"]
+                        Form["Form Data (POST)"]
+                        Route["Route Values"]
+                        Query["Query String"]
+                        Body["JSON / XML Body"]
+                        Header["Headers"]
                         end
 
-                        Sources -- "Primitive Typess" --> Primitive["2. Primitive Model Binder (URI-based)"]
-                        Sources -- "Complex Types" --> Complex["3. Complex Model Binder (Body-based)"]
+                        Sources --> Decide["2. Chọn loại Model Binder"]
 
-                        Primitive --> Result["4. Bound Arg (int, string, bool, GUID, DateTime)"]
+                        %% 2. Primitive vs Complex
+                        Decide --> Primitive["3A. Primitive Model Binder<br/>(simple types, URI-based)"]
+                        Decide --> Complex["3B. Complex Model Binder<br/>(object graph, Body-based)"]
+
+                        Primitive --> Result["4. Bound Action Parameters<br/>(int, string, bool, Guid, DateTime, DTOs, ...)"]
                         Complex --> Result
 
-                        subgraph Attributes [Source Specifiers]
+                        %% 3. Source Attributes
+                        subgraph Attributes["Source Attributes (Optional)"]
                         SR["[FromRoute]"]
                         SQ["[FromQuery]"]
                         SB["[FromBody]"]
@@ -241,10 +247,13 @@
 
                         Result -.-> Attributes
 
+                        %% Styling
                         style Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                        style Decide fill:#1e293b,color:#fff
                         style Primitive fill:#2563eb,color:#fff
                         style Complex fill:#4c1d95,color:#fff
                         style Result fill:#10b981,color:#fff
+                        style Attributes fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
                     </div>
                 </div>
 
