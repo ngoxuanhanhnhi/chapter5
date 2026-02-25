@@ -1,21 +1,21 @@
-:root {
+﻿/*:root {*/
     /* Enterprise Color Palette - Solution Architect Specs */
-    --routing-blue: #002366;
+    /*--routing-blue: #002366;*/
     /* Royal Blue */
-    --binding-purple: #4b0082;
+    /*--binding-purple: #4b0082;*/
     /* Deep Purple */
-    --validation-orange: #ff4500;
+    /*--validation-orange: #ff4500;*/
     /* Vibrant Orange (Orange-Red for impact) */
-    --success-green: #10b981;
+    /*--success-green: #10b981;
     --error-red: #ef4444;
-    --primary: #3b82f6;
+    --primary: #3b82f6;*/
     /* Global Blue for Badges */
-    --badge-size: 28px;
+    /*--badge-size: 28px;
     --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
     --badge-bg: #4c1d95;
-    --accent: #10b981;
+    --accent: #10b981;*/
     /* Mint Green */
-}
+/*}
 
 * {
     margin: 0;
@@ -36,10 +36,10 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
-}
+}*/
 
 /* Navbar */
-.navbar {
+/*.navbar {
     height: 80px;
     display: flex;
     align-items: center;
@@ -80,10 +80,10 @@ body {
 
 .nav-links a:hover {
     color: var(--text-main);
-}
+}*/
 
 /* Hero Section */
-.hero {
+/*.hero {
     padding: 6rem 0 4rem;
     text-align: center;
 }
@@ -103,10 +103,10 @@ body {
     color: var(--text-muted);
     max-width: 600px;
     margin: 0 auto;
-}
+}*/
 
 /* Sections */
-.diagram-section {
+/*.diagram-section {
     padding: 4rem 0;
 }
 
@@ -123,10 +123,10 @@ body {
 
 .section-header p {
     color: var(--text-muted);
-}
+}*/
 
 /* Card & Diagrams */
-.card {
+/*.card {
     background: var(--card-bg);
     backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
@@ -139,10 +139,10 @@ body {
 
 .card:hover {
     transform: translateY(-5px);
-}
+}*/
 
 /* Explanation Layout */
-.explanation-grid {
+/*.explanation-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
@@ -207,15 +207,15 @@ body {
 
 .explanation-col li {
     margin-bottom: 0.5rem;
-}
+}*/
 
 /* Mermaid Customization Overrides */
-.mermaid {
+/*.mermaid {
     background: transparent !important;
-}
+}*/
 
 /* Badges */
-.badge {
+/*.badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -228,19 +228,19 @@ body {
     font-weight: 700;
     margin-right: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
-}
+}*/
 
 /* Footer */
-.footer {
+/*.footer {
     padding: 4rem 0;
     border-top: 1px solid var(--glass-border);
     text-align: center;
     color: var(--text-muted);
     font-size: 0.9rem;
-}
+}*/
 
 /* Code Example Styling */
-.example-box {
+/*.example-box {
     margin-top: 2rem;
     padding: 1.5rem;
     background: rgba(0, 0, 0, 0.3);
@@ -252,4 +252,252 @@ body {
 
 .example-box code {
     color: #e2e8f0;
+}*/
+
+:root {
+    /* Enterprise Color Palette - Solution Architect Specs */
+    --routing-blue: #002366; /* Royal Blue */
+    --binding-purple: #4b0082; /* Deep Purple */
+    --validation-orange: #ff4500; /* Vibrant Orange */
+    /* Functional Colors */
+    --success-green: #10b981;
+    --error-red: #ef4444;
+    --primary: #3b82f6; /* Global Blue for Badges */
+    --accent: #10b981; /* Mint Green */
+    /* UI Specs */
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(15, 23, 42, 0.6);
+    --nav-bg: rgba(15, 23, 42, 0.8);
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
+    --badge-size: 28px;
+    --badge-bg: #4c1d95;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* --- Navigation --- */
+.navbar {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #ffffff; /* Đã chuyển logo sang trắng */
+}
+
+    .logo span {
+        background: linear-gradient(to right, #3b82f6, #10b981);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+.nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+    margin-left: auto;
+}
+
+    .nav-links a {
+        text-decoration: none;
+        color: var(--text-muted);
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+/* --- Hero Section --- */
+.hero {
+    padding: 6rem 0 4rem;
+    text-align: center;
+}
+
+    .hero h2 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #ffffff !important; /* Đảm bảo tiêu đề chính màu trắng */
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+/* --- Sections & Cards --- */
+.diagram-section {
+    padding: 4rem 0;
+}
+
+.section-header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+    .section-header h3 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #ffffff !important; /* Tiêu đề section màu trắng */
+    }
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 32px;
+    padding: 3.5rem;
+    margin-bottom: 3rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+    /* Hiệu ứng Glow đặc trưng cho từng phần */
+    .card.routing-card:hover {
+        border-color: var(--routing-blue);
+        box-shadow: 0 0 30px rgba(0, 35, 102, 0.4);
+        transform: translateY(-10px);
+    }
+
+    .card.binding-card:hover {
+        border-color: var(--binding-purple);
+        box-shadow: 0 0 30px rgba(75, 0, 130, 0.4);
+        transform: translateY(-10px);
+    }
+
+    .card.validation-card:hover {
+        border-color: var(--validation-orange);
+        box-shadow: 0 0 30px rgba(255, 69, 0, 0.4);
+        transform: translateY(-10px);
+    }
+
+/* --- Explanation Grid --- */
+.explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.explanation-col {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.3s ease;
+}
+
+    .explanation-col:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .explanation-col h4 {
+        color: #ffffff !important; /* Tiêu đề con màu trắng */
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .explanation-col p,
+    .explanation-col li {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+    }
+
+/* --- Badges --- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--badge-size);
+    height: var(--badge-size);
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    background: var(--primary);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* --- Code Box --- */
+.example-box {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #000000;
+    border-radius: 16px;
+    border-left: 4px solid var(--primary);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    overflow-x: auto;
+}
+
+    .example-box code {
+        color: #e2e8f0;
+    }
+
+/* --- Footer --- */
+.footer {
+    padding: 5rem 0;
+    border-top: 1px solid var(--glass-border);
+    text-align: center;
+    color: var(--text-muted);
+}
+.mermaid svg {
+    width: 100% !important;
+    height: auto !important;
+}
+.mermaid {
+    font-size: 20px;
+}
+/* Responsive */
+@media (max-width: 900px) {
+    .explanation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h2 {
+        font-size: 2.5rem;
+    }
 }
