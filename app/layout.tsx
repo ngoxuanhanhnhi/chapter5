@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ChatWindow from "@/components/ChatWindow";
+import ChatWindow from "../components/ChatWindow";
 
 const inter = Inter({ subsets: ["latin"] });
 
