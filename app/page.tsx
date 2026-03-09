@@ -25,13 +25,13 @@ export default function Home() {
 
             <main className="container">
                 {/* Pipeline Overview Section */}
-                <section id="overview" className="overview-section">
+                <section id="overview" className="diagram-section">
                     <div className="section-header">
                         <h3>ASP.NET Core Request Processing Pipeline</h3>
                         <p>The integrated flow where a URL request is directed to an endpoint, data is extracted from sources,
                             and then verified for integrity before processing.</p>
                     </div>
-                    <div className="card" style={{ borderTop: "4px solid var(--primary)" }}>
+                    <div className="card">
                         <div className="mermaid-container">
                             <Mermaid chart={`
                                 %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 70, 'rankSpacing': 80}}}%%
@@ -67,36 +67,30 @@ export default function Home() {
                             `} />
                         </div>
 
-                        <div className="explanation-grid"
-                            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "2rem", marginTop: "2rem" }}>
-                            <div className="explanation-col"
-                                style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px" }}>
-                                <h4><span className="badge blue">1</span> <i className="fas fa-link"></i> Routing</h4>
+                        <div className="explanation-grid">
+                            <div className="explanation-col">
+                                <h4><span className="badge">1</span> <i className="fas fa-link"></i> Routing</h4>
                                 <p><strong>UseRouting()</strong> identifies the correct path. It compares the incoming URL
                                     against defined templates to select the target <strong>Controller & Action</strong>.</p>
                             </div>
-                            <div className="explanation-col"
-                                style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px" }}>
-                                <h4><span className="badge blue">2</span> <i className="fas fa-puzzle-piece"></i> Model Binding</h4>
+                            <div className="explanation-col">
+                                <h4><span className="badge">2</span> <i className="fas fa-puzzle-piece"></i> Model Binding</h4>
                                 <p>Data is extracted from <strong>Route, Query, Form, or Body</strong>. The system automatically
                                     maps these raw values into strongly-typed C# <strong>Action Parameters</strong>.</p>
                             </div>
-                            <div className="explanation-col"
-                                style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px" }}>
-                                <h4><span className="badge blue">3</span> <i className="fas fa-shield-halved"></i> Model Validation</h4>
+                            <div className="explanation-col">
+                                <h4><span className="badge">3</span> <i className="fas fa-shield-halved"></i> Model Validation</h4>
                                 <p>The system evaluates <strong>DataAnnotations</strong> (like [Required], [Email]) to ensure
                                     the model matches the expected business rules and integrity constraints.</p>
                             </div>
-                            <div className="explanation-col"
-                                style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px" }}>
-                                <h4><span className="badge blue">4</span> <i className="fas fa-door-open"></i> Gatekeeper</h4>
+                            <div className="explanation-col">
+                                <h4><span className="badge">4</span> <i className="fas fa-door-open"></i> Gatekeeper</h4>
                                 <p>Checks <strong>ModelState.IsValid</strong>. If validation fails (False), it triggers a
                                     <strong>400 Bad Request</strong>. If successful (True), it proceeds to the core logic
                                     handler.</p>
                             </div>
-                            <div className="explanation-col"
-                                style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px" }}>
-                                <h4><span className="badge blue">5</span> <i className="fas fa-code"></i> Controller Action</h4>
+                            <div className="explanation-col">
+                                <h4><span className="badge">5</span> <i className="fas fa-code"></i> Controller Action</h4>
                                 <p>The final destination where <strong>Business Logic</strong> is executed, interacting with
                                     services or databases to generate the final <strong>HTTP Response</strong>.</p>
                             </div>
@@ -110,8 +104,8 @@ export default function Home() {
                         <h3>URL Routing Engine</h3>
                         <p>Mapping URLs to executable resources via Middleware and Route Templates.</p>
                     </div>
-                    <div className="card">
-                        <div className="mermaid-container" style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
+                    <div className="card routing-card">
+                        <div className="mermaid-container">
                             <Mermaid chart={`
                                 graph TD
                                 Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
@@ -143,28 +137,22 @@ export default function Home() {
 
                         <div className="explanation-grid">
                             <div className="explanation-col">
-                                <h4>Definition</h4>
+                                <h4><i className="fas fa-info-circle"></i> Definition</h4>
                                 <p>Routing infrastructure is responsible for parsing URL patterns and directing HTTP requests to
                                     specific endpoint handlers.</p>
                             </div>
                             <div className="explanation-col">
-                                <h4>Workflow Steps</h4>
-                                <ul>
-                                    <li><strong>Step 1:</strong> System receives the raw URL from the client.</li>
-                                    <li><strong>Step 2:</strong> <code>UseRouting()</code> adds matching info to the request.
-                                    </li>
-                                    <li><strong>Step 3-4:</strong> Match URL against Attribute or Conventional templates.</li>
-                                    <li><strong>Step 5:</strong> <code>UseEndpoints()</code> executes the matched handler.</li>
-                                    <li><strong>Step 6:</strong> Control is handed over to the target Action Method.</li>
+                                <h4><i className="fas fa-list-ol"></i> Steps</h4>
+                                <ul style={{ listStyle: "none", padding: 0 }}>
+                                    <li style={{ marginBottom: "0.5rem" }}><strong>1.</strong> URL Received</li>
+                                    <li style={{ marginBottom: "0.5rem" }}><strong>2.</strong> Middleware Registration</li>
+                                    <li style={{ marginBottom: "0.5rem" }}><strong>3.</strong> Pattern Matching Logic</li>
+                                    <li style={{ marginBottom: "0.5rem" }}><strong>4.</strong> Handler Execution</li>
                                 </ul>
                             </div>
                             <div className="explanation-col">
-                                <h4>Key Components</h4>
-                                <ul>
-                                    <li><code>UseRouting / UseEndpoints</code></li>
-                                    <li><code>[Route], [HttpGet], [HttpPost]</code></li>
-                                    <li><code>EndpointRoutingMiddleware</code></li>
-                                </ul>
+                                <h4><i className="fas fa-tools"></i> Tools</h4>
+                                <p>Use <code>[Route]</code>, <code>[HttpGet]</code>, and <code>EndpointRouting</code> to fine-tune your mapping logic.</p>
                             </div>
                         </div>
                     </div>
@@ -176,8 +164,8 @@ export default function Home() {
                         <h3>Model Binding Mechanism</h3>
                         <p>Extracting request data and populating strongly-typed Action parameters.</p>
                     </div>
-                    <div className="card">
-                        <div className="mermaid-container" style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
+                    <div className="card binding-card">
+                        <div className="mermaid-container">
                             <Mermaid chart={`
                                 %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 70}}}%%
                                 flowchart TD
@@ -223,27 +211,16 @@ export default function Home() {
 
                         <div className="explanation-grid">
                             <div className="explanation-col">
-                                <h4>Definition</h4>
-                                <p>The process of retrieving data from HTTP Request sources and mapping it to Action Method
-                                    parameters.</p>
+                                <h4><i className="fas fa-database"></i> Source Matrix</h4>
+                                <p>The engine automatically scans multiple sources based on convention or explicit attributes.</p>
                             </div>
                             <div className="explanation-col">
-                                <h4>Workflow Steps</h4>
-                                <ul>
-                                    <li><strong>Step 1:</strong> Data is scanned from Body, Forms, Route, or Query.</li>
-                                    <li><strong>Step 2:</strong> Primitive Binders handle simple types from the URI.</li>
-                                    <li><strong>Step 3:</strong> Complex Binders handle JSON/XML objects from the Body.</li>
-                                    <li><strong>Step 4:</strong> Binders populate the target C# objects.</li>
-                                    <li><strong>Step 5:</strong> The action receives fully-typed parameters.</li>
-                                </ul>
+                                <h4><i className="fas fa-cogs"></i> Process</h4>
+                                <p>Model binders bridge the gap between HTTP strings and .NET types, handling collections and complex trees.</p>
                             </div>
                             <div className="explanation-col">
-                                <h4>Key Components</h4>
-                                <ul>
-                                    <li><code>[FromBody], [FromQuery], [FromRoute]</code></li>
-                                    <li><code>IModelBinder / ValueProviders</code></li>
-                                    <li><code>Default Value Handling</code></li>
-                                </ul>
+                                <h4><i className="fas fa-tags"></i> Attributes</h4>
+                                <p>Override defaults using <code>[FromBody]</code>, <code>[FromQuery]</code>, or <code>[FromRoute]</code>.</p>
                             </div>
                         </div>
                     </div>
@@ -255,8 +232,8 @@ export default function Home() {
                         <h3>Model Validation Pipeline</h3>
                         <p>Ensuring data integrity and security through metadata-based constraints.</p>
                     </div>
-                    <div className="card">
-                        <div className="mermaid-container" style={{ display: "flex", justifyContent: "center", marginBottom: "3rem" }}>
+                    <div className="card validation-card">
+                        <div className="mermaid-container">
                             <Mermaid chart={`
                                 graph TD
                                 Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
@@ -295,28 +272,16 @@ export default function Home() {
 
                         <div className="explanation-grid">
                             <div className="explanation-col">
-                                <h4>Definition</h4>
-                                <p>Validation ensures that submitted data complies with security and business rules before
-                                    execution.</p>
+                                <h4><i className="fas fa-check-double"></i> Strategy</h4>
+                                <p>Execute business rules via metadata. Ensure safety at the server level regardless of client UX.</p>
                             </div>
                             <div className="explanation-col">
-                                <h4>Workflow Steps</h4>
-                                <ul>
-                                    <li><strong>Step 1:</strong> Validator receives the model after binding success.</li>
-                                    <li><strong>Step 2:</strong> Class is scanned for Data Annotation attributes.</li>
-                                    <li><strong>Step 3:</strong> Errors are populated into the <code>ModelState</code>
-                                        dictionary.</li>
-                                    <li><strong>Step 4:</strong> Code evaluates <code>ModelState.IsValid</code> status.</li>
-                                    <li><strong>Step 5:</strong> Returns 400 Bad Request or proceeds to logic.</li>
-                                </ul>
+                                <h4><i className="fas fa-exclamation-triangle"></i> Feedback</h4>
+                                <p>Populate <code>ModelState</code> to provide immediate, actionable feedback for invalid input.</p>
                             </div>
                             <div className="explanation-col">
-                                <h4>Key Components</h4>
-                                <ul>
-                                    <li><code>[Required], [Range], [StringLength]</code></li>
-                                    <li><code>ModelStateDictionary / IsValid</code></li>
-                                    <li><code>Client-side (Unobtrusive JS)</code></li>
-                                </ul>
+                                <h4><i className="fas fa-shield-alt"></i> Security</h4>
+                                <p>Prevents over-posting and SQL injection by validating the shape and content of input models.</p>
                             </div>
                         </div>
                     </div>

@@ -22,7 +22,7 @@ export default function ChatWindow() {
         <div className={`chat-container ${isOpen ? 'open' : 'closed'}`}>
             {!isOpen && (
                 <button
-                    className="chat-toggle-btn"
+                    className="chat-toggle-btn ai-chat-trigger"
                     onClick={() => setIsOpen(true)}
                     aria-label="Open chat"
                 >
