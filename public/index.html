@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASP.NET Core Architecture: Request Life Cycle</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'Poppins',
+            themeVariables: {
+                primaryColor: '#2563eb',
+                secondaryColor: '#4c1d95',
+                tertiaryColor: '#10b981',
+                mainBkg: 'rgba(255, 255, 255, 0.05)',
+                nodeBorder: 'rgba(255, 255, 255, 0.1)',
+                clusterBkg: 'transparent',
+                titleColor: '#f1f5f9',
+                edgeColor: '#94a3b8'
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container" style="display: flex; align-items: center; width: 100%;">
+            <h1 class="logo">Chapter 05 <span>Binding - Routing - Validation</span></h1>
+            <ul class="nav-links">
+                <li><a href="#overview"><i class="fas fa-globe"></i> Overview</a></li>
+                <li><a href="#routing"><i class="fas fa-link"></i> Routing</a></li>
+                <li><a href="#binding"><i class="fas fa-puzzle-piece"></i> Binding</a></li>
+                <li><a href="#validation"><i class="fas fa-shield-halved"></i> Validation</a></li>
+                <li><a href="#patterns"><i class="fas fa-layer-group"></i> Patterns</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h2>Request Life Cycle</h2>
+            <p>Comprehensive technical deep dive into ASP.NET Core: Routing, Model Binding, and Validation Pipeline.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Pipeline Overview Section -->
+        <section id="overview" class="overview-section">
+            <div class="section-header">
+                <h3>ASP.NET Core Request Processing Pipeline</h3>
+                <p>The integrated flow where a URL request is directed to an endpoint, data is extracted from sources,
+                    and then verified for integrity before processing.</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--primary);">
+                <div class="mermaid-container">
+                    <div class="mermaid">
+                        %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 70, 'rankSpacing': 80}}}%%
+                        flowchart TD
+                        %% Nodes
+                        Globe(["HTTP Request"])
+                        Step1["Step 1: UseRouting()"]
+                        Routing["Routing Match<br/>(Controller & Action)"]
+                        Step2["Step 2: Model Binding"]
+                        Step3["Step 3: Model Validation"]
+                        Step4{"Step 4: Gatekeeper<br/>ModelState.IsValid?"}
+                        Step5["Step 5: Controller Action<br/>(Process Logic)"]
+                        Error["400 Bad Request<br/>(Invalid Data)"]
+                        Response(["HTTP Response"])
+
+                        %% Flow
+                        Globe --> Step1 --> Routing --> Step2 --> Step3 --> Step4
+                        Step4 -- "False" --> Error
+                        Step4 -- "True" --> Step5
+                        Step5 --> Response
+                        Error --> Response
+
+                        %% Detailed Styling
+                        style Globe fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
+                        style Step1 fill:#eef2ff,stroke:#002366,color:#002366
+                        style Routing fill:#020617,stroke:#475569,color:#e2e8f0
+                        style Step2 fill:#f5f3ff,stroke:#4b0082,color:#4b0082
+                        style Step3 fill:#fff7ed,stroke:#ff4500,color:#ff4500
+                        style Step4 fill:#fffbeb,stroke:#f59e0b,color:#92400e
+                        style Step5 fill:#022c22,stroke:#10b981,color:#bbf7d0
+                        style Error fill:#450a0a,stroke:#ef4444,color:#fecaca
+                        style Response fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
+                    </div>
+                </div>
+
+                <div class="explanation-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">1</span> <i class="fas fa-link"></i> Routing</h4>
+                        <p><strong>UseRouting()</strong> identifies the correct path. It compares the incoming URL
+                            against defined templates to select the target <strong>Controller & Action</strong>.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">2</span> <i class="fas fa-puzzle-piece"></i> Model Binding</h4>
+                        <p>Data is extracted from <strong>Route, Query, Form, or Body</strong>. The system automatically
+                            maps these raw values into strongly-typed C# <strong>Action Parameters</strong>.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">3</span> <i class="fas fa-shield-halved"></i> Model Validation</h4>
+                        <p>The system evaluates <strong>DataAnnotations</strong> (like [Required], [Email]) to ensure
+                            the model matches the expected business rules and integrity constraints.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">4</span> <i class="fas fa-door-open"></i> Gatekeeper</h4>
+                        <p>Checks <strong>ModelState.IsValid</strong>. If validation fails (False), it triggers a
+                            <strong>400 Bad Request</strong>. If successful (True), it proceeds to the core logic
+                            handler.</p>
+                    </div>
+                    <div class="explanation-col"
+                        style="padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px;">
+                        <h4><span class="badge blue">5</span> <i class="fas fa-code"></i> Controller Action</h4>
+                        <p>The final destination where <strong>Business Logic</strong> is executed, interacting with
+                            services or databases to generate the final <strong>HTTP Response</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Routing Section -->
+        <section id="routing" class="diagram-section">
+            <div class="section-header">
+                <h3>URL Routing Engine</h3>
+                <p>Mapping URLs to executable resources via Middleware and Route Templates.</p>
+            </div>
+            <div class="card">
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        graph TD
+                        Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
+                        Middleware --> Matching{3. Pattern Matching}
+
+                        Matching -- "Attribute Routing (Recommended)" --> Attr["4. [Route('orders/{id}')]"]
+                        Matching -- "Conventional Routing" --> Conv["4. MapControllerRoute(...)"]
+
+                        subgraph Dynamic_Vars [Dynamic Parameters]
+                        D1["{Id}"]
+                        D2["{Gender}/{CityId}"]
+                        end
+
+                        Attr -.-> Dynamic_Vars
+
+                        Matching --> Multi["Multiple URLs Single Resource"]
+
+                        Attr --> UseEndpoints["5. UseEndpoints() (Map to Resources)"]
+                        Conv --> UseEndpoints
+
+                        UseEndpoints --> Action["6. Action Method Execution"]
+
+                        style Start fill:#2563eb,color:#fff
+                        style Action fill:#10b981,color:#fff
+                        style Middleware fill:#4c1d95,color:#fff
+                        style UseEndpoints fill:#4c1d95,color:#fff
+                    </div>
+                </div>
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>Routing infrastructure is responsible for parsing URL patterns and directing HTTP requests to
+                            specific endpoint handlers.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> System receives the raw URL from the client.</li>
+                            <li><strong>Step 2:</strong> <code>UseRouting()</code> adds matching info to the request.
+                            </li>
+                            <li><strong>Step 3-4:</strong> Match URL against Attribute or Conventional templates.</li>
+                            <li><strong>Step 5:</strong> <code>UseEndpoints()</code> executes the matched handler.</li>
+                            <li><strong>Step 6:</strong> Control is handed over to the target Action Method.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>UseRouting / UseEndpoints</code></li>
+                            <li><code>[Route], [HttpGet], [HttpPost]</code></li>
+                            <li><code>EndpointRoutingMiddleware</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Binding Section -->
+        <section id="binding" class="diagram-section">
+            <div class="section-header">
+                <h3>Model Binding Mechanism</h3>
+                <p>Extracting request data and populating strongly-typed Action parameters.</p>
+            </div>
+            <div class="card">
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 70}}}%%
+                        flowchart TD
+                        %% 1. Data Sources
+                        subgraph Sources["1. Data Sources"]
+                        Form["Form Data (POST)"]
+                        Route["Route Values"]
+                        Query["Query String"]
+                        Body["JSON / XML Body"]
+                        Header["Headers"]
+                        end
+
+                        Sources --> Decide["2. Choose Model Binder Type"]
+
+                        %% 2. Primitive vs Complex
+                        Decide --> Primitive["3A. Primitive Model Binder<br/>(simple types, URI-based)"]
+                        Decide --> Complex["3B. Complex Model Binder<br/>(object graph, Body-based)"]
+
+                        Primitive --> Result["4. Bound Action Parameters<br/>(int, string, bool, Guid, DateTime, DTOs, ...)"]
+                        Complex --> Result
+
+                        %% 3. Source Attributes
+                        subgraph Attributes["Source Attributes (Optional)"]
+                        SR["[FromRoute]"]
+                        SQ["[FromQuery]"]
+                        SB["[FromBody]"]
+                        SF["[FromForm]"]
+                        SH["[FromHeader]"]
+                        SS["[FromServices]"]
+                        end
+
+                        Result -.-> Attributes
+
+                        %% Styling
+                        style Sources fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                        style Decide fill:#1e293b,color:#fff
+                        style Primitive fill:#2563eb,color:#fff
+                        style Complex fill:#4c1d95,color:#fff
+                        style Result fill:#10b981,color:#fff
+                        style Attributes fill:transparent,stroke:#94a3b8,stroke-dasharray: 5 5
+                    </div>
+                </div>
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>The process of retrieving data from HTTP Request sources and mapping it to Action Method
+                            parameters.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Data is scanned from Body, Forms, Route, or Query.</li>
+                            <li><strong>Step 2:</strong> Primitive Binders handle simple types from the URI.</li>
+                            <li><strong>Step 3:</strong> Complex Binders handle JSON/XML objects from the Body.</li>
+                            <li><strong>Step 4:</strong> Binders populate the target C# objects.</li>
+                            <li><strong>Step 5:</strong> The action receives fully-typed parameters.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[FromBody], [FromQuery], [FromRoute]</code></li>
+                            <li><code>IModelBinder / ValueProviders</code></li>
+                            <li><code>Default Value Handling</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Validation Section -->
+        <section id="validation" class="diagram-section">
+            <div class="section-header">
+                <h3>Model Validation Pipeline</h3>
+                <p>Ensuring data integrity and security through metadata-based constraints.</p>
+            </div>
+            <div class="card">
+                <div class="mermaid-container" style="display: flex; justify-content: center; margin-bottom: 3rem;">
+                    <div class="mermaid" style="width: 100%; max-width: 800px;">
+                        graph TD
+                        Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
+
+                        subgraph Attributes [Built-in Constraints]
+                        R["[Required]"]
+                        S["[StringLength]"]
+                        RA["[Range]"]
+                        E["[Email/Url/Phone]"]
+                        RG["[RegularExpression]"]
+                        end
+
+                        DataAnnot -.-> Attributes
+
+                        DataAnnot --> UpdateState["Update ModelState Dictionary"]
+                        UpdateState --> Decision{ModelState.IsValid?}
+
+                        Decision -- "False" --> Error["400 Bad Request / Client Error"]
+                        Decision -- "True" --> Success["Proceed to Business Logic"]
+
+                        subgraph Compare [Server vs Client]
+                        SV["Server: Safe & Secure"]
+                        CL["Client: JS/jQuery (Fast UX)"]
+                        end
+
+                        Success --> SV
+                        Error --> CL
+
+                        style Model fill:#2563eb,color:#fff
+                        style DataAnnot fill:#4c1d95,color:#fff
+                        style Decision fill:#4c1d95,color:#fff
+                        style Success fill:#10b981,color:#fff
+                        style Error fill:#ef4444,color:#fff
+                    </div>
+                </div>
+
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4>Definition</h4>
+                        <p>Validation ensures that submitted data complies with security and business rules before
+                            execution.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Workflow Steps</h4>
+                        <ul>
+                            <li><strong>Step 1:</strong> Validator receives the model after binding success.</li>
+                            <li><strong>Step 2:</strong> Class is scanned for Data Annotation attributes.</li>
+                            <li><strong>Step 3:</strong> Errors are populated into the <code>ModelState</code>
+                                dictionary.</li>
+                            <li><strong>Step 4:</strong> Code evaluates <code>ModelState.IsValid</code> status.</li>
+                            <li><strong>Step 5:</strong> Returns 400 Bad Request or proceeds to logic.</li>
+                        </ul>
+                    </div>
+                    <div class="explanation-col">
+                        <h4>Key Components</h4>
+                        <ul>
+                            <li><code>[Required], [Range], [StringLength]</code></li>
+                            <li><code>ModelStateDictionary / IsValid</code></li>
+                            <li><code>Client-side (Unobtrusive JS)</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Patterns Section -->
+        <section id="patterns" class="diagram-section">
+            <div class="section-header">
+                <h3>Architectural Patterns</h3>
+                <p>Establishing clean, maintainable, and decoupled systems.</p>
+            </div>
+            <div class="card">
+                <div class="explanation-grid">
+                    <div class="explanation-col">
+                        <h4><span class="badge">R</span> Repository Pattern</h4>
+                        <p>Creates an abstraction layer between data access and business logic. Promotes loose coupling
+                            and easier unit testing.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4><span class="badge">D</span> DTOs & Mappings</h4>
+                        <p><strong>Data Transfer Objects:</strong> Manipulates and returns data without exposing
+                            internal database entities directly.</p>
+                    </div>
+                    <div class="explanation-col">
+                        <h4><span class="badge">A</span> AutoMapper</h4>
+                        <p>A specialized library used to automatically map properties between Entities and DTOs,
+                            reducing repetitive boilerplate code.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 ASP.NET Core Architecture Hub | Technical Documentation Architecture</p>
+        </div>
+    </footer>
+</body>
+
+</html>
