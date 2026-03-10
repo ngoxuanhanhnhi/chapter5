@@ -8,9 +8,17 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
+    console.log("Environment check - GOOGLE_GENERATIVE_AI_API_KEY present:", !!process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+        console.log("API Key prefix:", process.env.GOOGLE_GENERATIVE_AI_API_KEY.substring(0, 7) + "...");
+    }
+
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment variables");
-      return new Response("Missing API Key on Server", { status: 500 });
+      return new Response(JSON.stringify({ error: "API Key missing on server" }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     console.log("Starting streamText with Gemini 1.5 Flash...");
