@@ -95,9 +95,11 @@ export default function ChatWindow() {
 
                         {error && (
                             <div className="error-message">
-                                <strong>Chat Error:</strong> {error.message === "An error occurred." ? "Server connection failed." : error.message}
+                                <strong>Chat Error:</strong> {error.message}
                                 <br />
-                                <small>Please ensure <code>GOOGLE_GENERATIVE_AI_API_KEY</code> is set in Vercel/environment.</small>
+                                {error.message.includes("fetch") && (
+                                    <small>Network error detected. Check your internet or Vercel logs.</small>
+                                )}
                             </div>
                         )}
                         <div ref={messagesEndRef} />
