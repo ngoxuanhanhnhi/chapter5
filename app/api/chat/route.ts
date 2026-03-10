@@ -11,19 +11,22 @@ export async function POST(req: Request) {
     console.log("Environment check - GOOGLE_GENERATIVE_AI_API_KEY present:", !!process.env.GOOGLE_GENERATIVE_AI_API_KEY);
     if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
         console.log("API Key prefix:", process.env.GOOGLE_GENERATIVE_AI_API_KEY.substring(0, 7) + "...");
+    } else {
+        console.error("CRITICAL: GOOGLE_GENERATIVE_AI_API_KEY IS MISSING!");
     }
 
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      console.error("GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment variables");
-      return new Response(JSON.stringify({ error: "API Key missing on server" }), { 
+      return new Response(JSON.stringify({ error: "API Key missing on Vercel. Please add GOOGLE_GENERATIVE_AI_API_KEY in Settings > Environment Variables." }), { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    console.log("Starting streamText with Gemini 1.5 Flash...");
+    console.log("Messages count:", messages?.length);
+    console.log("Starting streamText with Gemini 2.0 Flash...");
+
     const result = streamText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-2.0-flash'),
       messages,
       system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
     });
@@ -31,12 +34,15 @@ export async function POST(req: Request) {
     return result.toDataStreamResponse();
   } catch (error: any) {
     console.error("Detailed Chat API Error:", error);
-    // Log the full error object for better debugging in Vercel/Local console
-    if (error.response) {
-        console.error("Error Response Data:", await error.response.json());
-    }
-    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    if (error.stack) console.error("Error Stack:", error.stack);
+    
+    // Attempt to extract more info from the error if possible
+    const errorDetails = error.cause || error.message || "Unknown error";
+    
+    return new Response(JSON.stringify({ 
+        error: "Internal Server Error during AI streaming.",
+        details: errorDetails
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
