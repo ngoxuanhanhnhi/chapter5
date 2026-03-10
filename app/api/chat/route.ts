@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { streamText, generateText } from 'ai';
+import { streamText } from 'ai';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -23,42 +23,24 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Messages count:", messages?.length);
-    console.log("Starting generateText (NON-STREAMING) with Gemini 2.0 Flash...");
-
-    // Switching to generateText for diagnosis to get a clear error or result
-    const { text } = await generateText({
+    const result = streamText({
       model: google('gemini-2.0-flash'),
       messages,
       system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
     });
 
-    console.log("AI Response generated successfully (length):", text.length);
-
-    // Return a simple JSON response instead of a stream
-    return new Response(JSON.stringify({ text }), {
-        headers: { 'Content-Type': 'application/json' }
-    });
+    return result.toDataStreamResponse();
   } catch (error: any) {
-    console.error("DIAGNOSTIC ERROR - Chat API Failed:", error);
-    if (error.stack) console.error("Error Stack:", error.stack);
+    console.error("Chat API Error:", error.message || error);
     
-    let errorDetails = "Unknown error";
-    if (error.response) {
-        try {
-            const body = await error.response.json();
-            console.error("Gemini API error body:", JSON.stringify(body));
-            errorDetails = JSON.stringify(body);
-        } catch (e) {
-            errorDetails = error.message;
-        }
-    } else {
-        errorDetails = error.message;
-    }
-    
+    // Return a structured error for the frontend
+    const errorMessage = error.message?.includes("quota") 
+        ? "API Quota Exceeded. Please wait a moment and try again." 
+        : "An error occurred during AI processing.";
+
     return new Response(JSON.stringify({ 
-        error: "Internal Server Error during AI generation.",
-        details: errorDetails
+        error: errorMessage,
+        details: error.message
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
