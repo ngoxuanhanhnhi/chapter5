@@ -15,8 +15,8 @@ export async function POST(req: Request) {
 
     // Use Llama 3.3 70b on Groq for high speed and intelligence
     const result = streamText({
-      model: groq('llama-3.3-70b-versatile'),
-      messages,
+      model: groq('llama-3.3-70b-versatile') as any,
+      messages: messages as any,
       system: "You are a helpful assistant for ASP.NET Core learning. Focus on Routing, Binding, and Validation.",
     });
 
