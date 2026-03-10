@@ -7,7 +7,11 @@ import './ChatWindow.css';
 
 export default function ChatWindow() {
     const [isOpen, setIsOpen] = useState(false);
-    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat();
+    const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+        onError: (err) => {
+            console.error("Chat Window Error:", err);
+        }
+    });
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -82,7 +86,9 @@ export default function ChatWindow() {
 
                         {error && (
                             <div className="error-message">
-                                Error: {error.message}. Please check your API Key.
+                                <strong>Chat Error:</strong> {error.message === "An error occurred." ? "Server connection failed." : error.message}
+                                <br />
+                                <small>Please ensure <code>GOOGLE_GENERATIVE_AI_API_KEY</code> is set in Vercel/environment.</small>
                             </div>
                         )}
                         <div ref={messagesEndRef} />
