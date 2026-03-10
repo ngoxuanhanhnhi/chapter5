@@ -7,11 +7,18 @@ import './ChatWindow.css';
 
 export default function ChatWindow() {
     const [isOpen, setIsOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         onError: (err) => {
-            console.error("Chat Window Error:", err);
+            console.error("Chat Window Error (Full):", err);
         }
     });
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -19,8 +26,10 @@ export default function ChatWindow() {
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        if (mounted) scrollToBottom();
+    }, [messages, mounted]);
+
+    if (!mounted) return null;
 
     return (
         <div className={`chat-container ${isOpen ? 'open' : 'closed'}`}>
