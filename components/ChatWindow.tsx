@@ -15,7 +15,13 @@ export default function ChatWindow() {
 
     const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         onError: (err) => {
-            console.error("Chat Window Error (Full):", err);
+            console.error("Chat Window Error (Detailed):", err);
+            try {
+                const parsedError = JSON.parse(err.message);
+                console.log("Parsed Error Body:", parsedError);
+            } catch (e) {
+                // Not JSON, just a string
+            }
         }
     });
 
