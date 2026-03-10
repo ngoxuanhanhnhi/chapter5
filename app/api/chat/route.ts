@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { streamText, generateText } from 'ai';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -23,23 +23,33 @@ export async function POST(req: Request) {
       });
     }
 
-    const result = streamText({
-      model: google('gemini-1.5-flash'),
-      messages,
-      system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
-    });
+    console.log("Starting generateText (DIAGNOSTIC) with Gemini 1.5 Flash...");
 
-    return result.toDataStreamResponse();
+    try {
+        const { text } = await generateText({
+            model: google('gemini-1.5-flash'),
+            messages,
+            system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
+        });
+
+        console.log("AI Response generated successfully");
+        return new Response(JSON.stringify({ text }), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (genError: any) {
+        console.error("DIAGNOSTIC ERROR:", genError);
+        // Returns the error message as a normal chat response so the user can see it
+        return new Response(JSON.stringify({ 
+            text: `⚠️ DIAGNOSTIC ERROR: ${genError.message}\n\nPlease check Vercel Logs for full details.` 
+        }), {
+            status: 200, // Returning 200 so useChat displays the error as a message
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
   } catch (error: any) {
-    console.error("Chat API Error:", error.message || error);
-    
-    // Return a structured error for the frontend
-    const errorMessage = error.message?.includes("quota") 
-        ? "API Quota Exceeded. Please wait a moment and try again." 
-        : "An error occurred during AI processing.";
-
+    console.error("Critical Route Error:", error);
     return new Response(JSON.stringify({ 
-        error: errorMessage,
+        error: "Internal Server Error",
         details: error.message
     }), {
       status: 500,
