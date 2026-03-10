@@ -1,42 +1,50 @@
 import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import { streamText, createDataStreamResponse } from 'ai';
 
-// Using Edge for faster execution
 export const runtime = 'edge';
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
+
+    if (!messages || messages.length === 0) {
+        return new Response('No messages provided', { status: 400 });
+    }
+
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    
+    // We use createDataStreamResponse to ensure we can send a custom message even if things fail
+    return createDataStreamResponse({
+      execute: async (dataStream) => {
+        try {
+          if (!apiKey) {
+            dataStream.writeText("⚠️ Error: GOOGLE_GENERATIVE_AI_API_KEY is not set on Vercel.");
+            return;
+          }
 
-    if (!apiKey) {
-      return new Response(JSON.stringify({ text: "⚠️ Error: API Key missing on server." }), { status: 200 });
-    }
+          const result = streamText({
+            model: google('gemini-1.5-flash'),
+            messages,
+            system: "You are a helpful assistant for ASP.NET Core learning.",
+          });
 
-    console.log("Starting generateText with NEW API KEY...");
-
-    try {
-      const { text } = await generateText({
-        model: google('gemini-1.5-flash'),
-        messages: messages,
-        system: "You are a helpful assistant.",
-      });
-
-      console.log("Success with new key!");
-      return new Response(JSON.stringify({ text }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (apiError: any) {
-      console.error("Gemini API Error details:", apiError);
-      // Return the raw error message to the chat so we can see it
-      return new Response(JSON.stringify({ 
-        text: `⚠️ GEMINI ERROR: ${apiError.message}` 
-      }), {
-        status: 200, 
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+          result.mergeIntoDataStream(dataStream);
+        } catch (err: any) {
+          console.error("Internal stream error:", err);
+          dataStream.writeText(`⚠️ GEMINI ERROR: ${err.message}`);
+        }
+      },
+      onError: (error) => {
+        console.error("DataStream Error:", error);
+        return "An error occurred during streaming.";
+      }
+    });
   } catch (error: any) {
-    return new Response(JSON.stringify({ text: `⚠️ Server Error: ${error.message}` }), { status: 200 });
+    console.error("Critical Post Error:", error);
+    return new Response(JSON.stringify({ error: error.message }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
