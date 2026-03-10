@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google';
+import { groq } from '@ai-sdk/groq';
 import { streamText } from 'ai';
 
 // Recommended for streaming on Vercel
@@ -9,13 +9,13 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      return new Response(JSON.stringify({ error: "Missing API Key" }), { status: 500 });
+    if (!process.env.GROQ_API_KEY) {
+      return new Response(JSON.stringify({ error: "Missing Groq API Key. Please add GROQ_API_KEY to your .env file." }), { status: 500 });
     }
 
-    // Use gemini-1.5-flash with default settings for maximum stability
+    // Use Llama 3.3 70b on Groq for high speed and intelligence
     const result = streamText({
-      model: google('gemini-1.5-flash'),
+      model: groq('llama-3.3-70b-versatile'),
       messages,
       system: "You are a helpful assistant for ASP.NET Core learning. Focus on Routing, Binding, and Validation.",
     });
