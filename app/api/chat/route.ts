@@ -1,4 +1,4 @@
-import { google } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 
 // Use Edge Runtime for better streaming support and lower latency
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
 
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    console.log("Edge Runtime - API Key present:", !!apiKey);
+    console.log("Edge Runtime (Internal) - API Key present:", !!apiKey);
     
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Missing GOOGLE_GENERATIVE_AI_API_KEY" }), { 
@@ -18,6 +18,11 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    // Initialize provider INSIDE the POST function to ensure env vars are fresh
+    const google = createGoogleGenerativeAI({
+      apiKey: apiKey,
+    });
 
     console.log("Starting streamText with Gemini 1.5 Flash...");
 
