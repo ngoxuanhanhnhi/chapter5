@@ -101,10 +101,11 @@ export default function ChatWindow() {
 
                         {error && (
                             <div className="error-message">
-                                <strong>Chat Error:</strong> {error.message}
-                                <br />
-                                {error.message.includes("fetch") && (
-                                    <small>Network error detected. Check your internet or Vercel logs.</small>
+                                <strong>Chat Error:</strong> {error.message || "An error occurred."}
+                                {error.message === "An error occurred." && (
+                                    <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.8 }}>
+                                        Check browser console (F12) for detailed logs.
+                                    </div>
                                 )}
                             </div>
                         )}

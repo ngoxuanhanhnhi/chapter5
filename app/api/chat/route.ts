@@ -1,40 +1,46 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 
-// Using Edge Runtime for optimal performance
-export const runtime = 'edge';
+// Using Node.js runtime for broad compatibility during debugging
+export const runtime = 'nodejs';
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+  console.log("Chat Request Received");
+  
   try {
     const { messages } = await req.json();
-
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "API Key missing." }), { status: 500 });
+      console.error("GOOGLE_GENERATIVE_AI_API_KEY is missing!");
+      return new Response(JSON.stringify({ error: "API Key missing" }), { status: 500 });
     }
 
-    // Explicitly using API v1 instead of v1beta to ensure gemini-1.5-flash is found
-    // This addresses the "model not found for v1beta" error we saw earlier.
+    // Standard provider initialization
     const google = createGoogleGenerativeAI({
-      apiKey,
-      baseURL: 'https://generativelanguage.googleapis.com/v1', 
+      apiKey: apiKey,
     });
+
+    console.log("Calling streamText with gemini-1.5-flash...");
 
     const result = streamText({
       model: google('gemini-1.5-flash'),
       messages,
-      system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
+      system: "You are a helpful assistant for ASP.NET Core learning. Focus on Routing, Binding, and Validation.",
     });
+
+    console.log("streamText initiated successfully");
 
     return result.toDataStreamResponse();
   } catch (error: any) {
-    console.error("Chat API Error:", error.message || error);
+    console.error("FATAL ERROR in /api/chat:", error);
     
+    // Return a clean error message that useChat can parse or display
     return new Response(JSON.stringify({ 
-        error: "An error occurred during AI processing.",
-        details: error.message
-    }), {
+      error: "AI_ERROR", 
+      message: error.message || "Unknown error occurred" 
+    }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
