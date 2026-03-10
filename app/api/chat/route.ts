@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { streamText, generateText } from 'ai';
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -24,24 +24,40 @@ export async function POST(req: Request) {
     }
 
     console.log("Messages count:", messages?.length);
-    console.log("Starting streamText with Gemini 2.0 Flash...");
+    console.log("Starting generateText (NON-STREAMING) with Gemini 2.0 Flash...");
 
-    const result = streamText({
+    // Switching to generateText for diagnosis to get a clear error or result
+    const { text } = await generateText({
       model: google('gemini-2.0-flash'),
       messages,
       system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
     });
 
-    return result.toDataStreamResponse();
+    console.log("AI Response generated successfully (length):", text.length);
+
+    // Return a simple JSON response instead of a stream
+    return new Response(JSON.stringify({ text }), {
+        headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error: any) {
-    console.error("Detailed Chat API Error:", error);
+    console.error("DIAGNOSTIC ERROR - Chat API Failed:", error);
     if (error.stack) console.error("Error Stack:", error.stack);
     
-    // Attempt to extract more info from the error if possible
-    const errorDetails = error.cause || error.message || "Unknown error";
+    let errorDetails = "Unknown error";
+    if (error.response) {
+        try {
+            const body = await error.response.json();
+            console.error("Gemini API error body:", JSON.stringify(body));
+            errorDetails = JSON.stringify(body);
+        } catch (e) {
+            errorDetails = error.message;
+        }
+    } else {
+        errorDetails = error.message;
+    }
     
     return new Response(JSON.stringify({ 
-        error: "Internal Server Error during AI streaming.",
+        error: "Internal Server Error during AI generation.",
         details: errorDetails
     }), {
       status: 500,
