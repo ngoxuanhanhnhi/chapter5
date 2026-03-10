@@ -23,33 +23,22 @@ export async function POST(req: Request) {
       });
     }
 
-    console.log("Starting generateText (DIAGNOSTIC) with Gemini 1.5 Flash...");
+    const result = streamText({
+      model: google('gemini-1.5-flash'),
+      messages,
+      system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
+    });
 
-    try {
-        const { text } = await generateText({
-            model: google('gemini-1.5-flash'),
-            messages,
-            system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
-        });
-
-        console.log("AI Response generated successfully");
-        return new Response(JSON.stringify({ text }), {
-            headers: { 'Content-Type': 'application/json' }
-        });
-    } catch (genError: any) {
-        console.error("DIAGNOSTIC ERROR:", genError);
-        // Returns the error message as a normal chat response so the user can see it
-        return new Response(JSON.stringify({ 
-            text: `⚠️ DIAGNOSTIC ERROR: ${genError.message}\n\nPlease check Vercel Logs for full details.` 
-        }), {
-            status: 200, // Returning 200 so useChat displays the error as a message
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
+    return result.toDataStreamResponse();
   } catch (error: any) {
-    console.error("Critical Route Error:", error);
+    console.error("Chat API Error:", error.message || error);
+    
+    const errorMessage = error.message?.includes("quota") 
+        ? "API Quota Exceeded. Please try again in a few moments." 
+        : "An error occurred during AI processing.";
+
     return new Response(JSON.stringify({ 
-        error: "Internal Server Error",
+        error: errorMessage,
         details: error.message
     }), {
       status: 500,
