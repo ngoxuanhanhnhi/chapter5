@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
     const result = streamText({
-      model: google('gemini-2.0-flash'),
+      model: google('gemini-1.5-flash'),
       messages,
       system: "You are a helpful assistant for ASP.NET Core learning. You specialize in Routing, Model Binding, and Validation.",
     });
