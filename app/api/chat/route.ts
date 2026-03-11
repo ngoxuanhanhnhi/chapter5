@@ -17,13 +17,20 @@ export async function POST(req: Request) {
     const result = streamText({
       model: groq('llama-3.3-70b-versatile') as any,
       messages: messages as any,
-      system: "You are a helpful assistant for ASP.NET Core learning. Focus on Routing, Binding, and Validation.",
+      system: `You are Gemini Assistant - a friendly mentor and expert in ASP.NET Core. 
+Response Style:
+- Use natural, encouraging English.
+- Use emojis (e.g., 🚀, 💡, ✅) to make responses more engaging.
+- Structure your answers clearly with logical paragraph breaks and newlines.
+- Explain concepts like a senior developer mentoring a colleague, rather than a dry textbook.
+- Focus deeply on: Routing, Model Binding, and Validation (Chapter 05).
+- If the user asks about topics outside ASP.NET Core, politely guide them back to these core subjects.`,
     });
 
     return result.toDataStreamResponse();
   } catch (error: any) {
     console.error("Critical API Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { 
+    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

@@ -16,12 +16,6 @@ export default function ChatWindow() {
     const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
         onError: (err) => {
             console.error("Chat Window Error (Detailed):", err);
-            try {
-                const parsedError = JSON.parse(err.message);
-                console.log("Parsed Error Body:", parsedError);
-            } catch (e) {
-                // Not JSON, just a string
-            }
         }
     });
 
@@ -72,7 +66,7 @@ export default function ChatWindow() {
                             <div className="welcome-message">
                                 <Bot size={40} className="welcome-icon" />
                                 <h4>How can I help you?</h4>
-                                <p>I'm trained on ASP.NET Core Chapter 5: Binding, Routing, and Validation.</p>
+                                <p>I'm an expert on ASP.NET Core Chapter 05: Binding, Routing, and Validation.</p>
                             </div>
                         )}
 
@@ -81,8 +75,8 @@ export default function ChatWindow() {
                                 <div className="message-icon">
                                     {m.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                                 </div>
-                                <div className="message-bubble">
-                                    {m.content}
+                                <div className="message-bubble" style={{ whiteSpace: 'pre-wrap' }}>
+                                    {m.content.replace(/\\n/g, '\n')}
                                 </div>
                             </div>
                         ))}
@@ -102,11 +96,6 @@ export default function ChatWindow() {
                         {error && (
                             <div className="error-message">
                                 <strong>Chat Error:</strong> {error.message || "An error occurred."}
-                                {error.message === "An error occurred." && (
-                                    <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.8 }}>
-                                        Check browser console (F12) for detailed logs.
-                                    </div>
-                                )}
                             </div>
                         )}
                         <div ref={messagesEndRef} />
