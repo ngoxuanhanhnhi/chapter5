@@ -1,13 +1,21 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 
 mermaid.initialize({
-    startOnLoad: true,
+    startOnLoad: false,
     theme: "dark",
     securityLevel: "loose",
-    fontFamily: "Poppins",
+    fontFamily: "Inter",
+    flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+        curve: "basis",
+        padding: 15,
+        nodeSpacing: 30,
+        rankSpacing: 40,
+    },
     themeVariables: {
         primaryColor: "#2563eb",
         secondaryColor: "#4c1d95",
@@ -17,21 +25,49 @@ mermaid.initialize({
         clusterBkg: "transparent",
         titleColor: "#f1f5f9",
         edgeColor: "#94a3b8",
+        fontSize: "13px",
     },
 });
 
 export default function Mermaid({ chart }: { chart: string }) {
     const ref = useRef<HTMLDivElement>(null);
+    const [svg, setSvg] = useState<string>("");
+    const [isMounted, setIsMounted] = useState(false);
+    const idRef = useRef(`mermaid-${Math.floor(Math.random() * 1000000)}`);
 
     useEffect(() => {
-        if (ref.current) {
-            mermaid.contentLoaded();
-        }
-    }, [chart]);
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!isMounted) return;
+
+        const renderChart = async () => {
+            if (ref.current && chart) {
+                try {
+                    const { svg } = await mermaid.render(idRef.current, chart);
+                    // Force text to be visible and correctly centered
+                    const optimizedSvg = svg
+                        .replace(/height="[^"]*"/, "")
+                        .replace(/style="[^"]*"/, 'style="max-width: 100%; height: auto; display: block; margin: auto;"');
+                    
+                    setSvg(optimizedSvg);
+                } catch (error) {
+                    console.error("Mermaid Render Error:", error);
+                }
+            }
+        };
+
+        renderChart();
+    }, [chart, isMounted]);
+
+    if (!isMounted) return <div className="mermaid-placeholder" style={{ height: '300px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px' }}></div>;
 
     return (
-        <div className="mermaid" ref={ref}>
-            {chart}
-        </div>
+        <div 
+            ref={ref} 
+            className="mermaid-wrapper w-full h-full flex justify-center items-center overflow-visible"
+            dangerouslySetInnerHTML={{ __html: svg }}
+        />
     );
 }
