@@ -34,36 +34,32 @@ export default function Home() {
                     <div className="card">
                         <div className="mermaid-container">
                             <Mermaid chart={`
-                                %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 70, 'rankSpacing': 80}}}%%
-                                flowchart TD
-                                %% Nodes
-                                Globe(["HTTP Request"])
-                                Step1["Step 1: UseRouting()"]
-                                Routing["Routing Match<br/>(Controller & Action)"]
-                                Step2["Step 2: Model Binding"]
-                                Step3["Step 3: Model Validation"]
-                                Step4{"Step 4: Gatekeeper<br/>ModelState.IsValid?"}
-                                Step5["Step 5: Controller Action<br/>(Process Logic)"]
-                                Error["400 Bad Request<br/>(Invalid Data)"]
-                                Response(["HTTP Response"])
+                                %%{init: {'flowchart': {'curve': 'step', 'nodeSpacing': 20, 'rankSpacing': 30}}}%%
+flowchart LR
+    Globe(["HTTP Request"]) --> Step1["Step 1:<br/>UseRouting()"]
+    Step1 --> Routing["Routing Match<br/>(Controller Action)"]
+    
+    %% Xuống dòng bằng cách bẻ node (Zigzag)
+    Routing --> Step2["Step 2:<br/>Model Binding"]
+    
+    Step2 --> Step3["Step 3:<br/>Model Validation"]
+    Step3 --> Step4{"Step 4:<br/>Gatekeeper<br/>IsValid?"}
+    
+    Step4 -- "True" --> Step5["Step 5:<br/>Action Execute"]
+    Step4 -- "False" --> Error["400 Bad<br/>Request"]
+    
+    Step5 & Error --> Response(["HTTP Response"])
 
-                                %% Flow
-                                Globe --> Step1 --> Routing --> Step2 --> Step3 --> Step4
-                                Step4 -- "False" --> Error
-                                Step4 -- "True" --> Step5
-                                Step5 --> Response
-                                Error --> Response
-
-                                %% Detailed Styling
-                                style Globe fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
-                                style Step1 fill:#eef2ff,stroke:#002366,color:#002366
-                                style Routing fill:#020617,stroke:#475569,color:#e2e8f0
-                                style Step2 fill:#f5f3ff,stroke:#4b0082,color:#4b0082
-                                style Step3 fill:#fff7ed,stroke:#ff4500,color:#ff4500
-                                style Step4 fill:#fffbeb,stroke:#f59e0b,color:#92400e
-                                style Step5 fill:#022c22,stroke:#10b981,color:#bbf7d0
-                                style Error fill:#450a0a,stroke:#ef4444,color:#fecaca
-                                style Response fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
+    %% Styling đồng bộ
+    style Globe fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
+    style Step1 fill:#eef2ff,stroke:#002366,color:#002366
+    style Routing fill:#020617,stroke:#475569,color:#e2e8f0
+    style Step2 fill:#f5f3ff,stroke:#4b0082,color:#4b0082
+    style Step3 fill:#fff7ed,stroke:#ff4500,color:#ff4500
+    style Step4 fill:#fffbeb,stroke:#f59e0b,color:#92400e
+    style Step5 fill:#022c22,stroke:#10b981,color:#bbf7d0
+    style Error fill:#450a0a,stroke:#ef4444,color:#fecaca
+    style Response fill:#0f172a,stroke:#38bdf8,color:#e5f6ff
                             `} />
                         </div>
 
@@ -107,23 +103,22 @@ export default function Home() {
                     <div className="card routing-card">
                         <div className="mermaid-container">
                             <Mermaid chart={`
-                                graph TD
-                                Start([1. URL Received]) --> Middleware["2. UseRouting middleware (Enable Routing)"]
+                                %%{init: {'flowchart': {'curve': 'step', 'nodeSpacing': 20, 'rankSpacing': 30}}}%%
+                                flowchart LR
+                                Start([1. URL Received]) --> Middleware["2. UseRouting middleware<br/>(Enable Routing)"]
                                 Middleware --> Matching{3. Pattern Matching}
 
-                                Matching -- "Attribute Routing (Recommended)" --> Attr["4. [Route('orders/{id}')]"]
+                                Matching -- "Attribute Routing<br/>(Recommended)" --> Attr["4. [Route('orders/{id}')]"]
                                 Matching -- "Conventional Routing" --> Conv["4. MapControllerRoute(...)"]
 
-                                subgraph Dynamic_Vars [Dynamic Parameters]
-                                D1["{Id}"]
-                                D2["{Gender}/{CityId}"]
-                                end
-
-                                Attr -.-> Dynamic_Vars
+                                %% Nhánh phụ mô tả Dynamic Configs
+                                Attr -.-> D1["{Id}"]
+                                Attr -.-> D2["{Gender}/{CityId}"]
 
                                 Matching --> Multi["Multiple URLs Single Resource"]
 
-                                Attr --> UseEndpoints["5. UseEndpoints() (Map to Resources)"]
+                                %% Gom lại nhánh chính
+                                Attr --> UseEndpoints["5. UseEndpoints()<br/>(Map to Resources)"]
                                 Conv --> UseEndpoints
 
                                 UseEndpoints --> Action["6. Action Method Execution"]
@@ -167,34 +162,27 @@ export default function Home() {
                     <div className="card binding-card">
                         <div className="mermaid-container">
                             <Mermaid chart={`
-                                %%{init: {'flowchart': {'curve': 'basis', 'nodeSpacing': 60, 'rankSpacing': 70}}}%%
-                                flowchart TD
+                                %%{init: {'flowchart': {'curve': 'step', 'nodeSpacing': 20, 'rankSpacing': 30}}}%%
+                                flowchart LR
                                 %% 1. Data Sources
                                 subgraph Sources["1. Data Sources"]
-                                Form["Form Data (POST)"]
-                                Route["Route Values"]
-                                Query["Query String"]
-                                Body["JSON / XML Body"]
-                                Header["Headers"]
+                                direction TB
+                                Form["Form (POST)"] ~~~ Route["Route Values"] ~~~ Query["Query String"] ~~~ Body["JSON Body"] ~~~ Header["Headers"]
                                 end
 
-                                Sources --> Decide["2. Choose Model Binder Type"]
+                                Sources --> Decide["2. Choose<br/>Binder Type"]
 
                                 %% 2. Primitive vs Complex
-                                Decide --> Primitive["3A. Primitive Model Binder<br/>(simple types, URI-based)"]
-                                Decide --> Complex["3B. Complex Model Binder<br/>(object graph, Body-based)"]
+                                Decide --> Primitive["3A. Primitive Binder<br/>(simple types)"]
+                                Decide --> Complex["3B. Complex Binder<br/>(object graph)"]
 
-                                Primitive --> Result["4. Bound Action Parameters<br/>(int, string, bool, Guid, DateTime, DTOs, ...)"]
+                                Primitive --> Result["4. Bound Parameters<br/>(int, string, DTOs...)"]
                                 Complex --> Result
 
                                 %% 3. Source Attributes
                                 subgraph Attributes["Source Attributes (Optional)"]
-                                SR["[FromRoute]"]
-                                SQ["[FromQuery]"]
-                                SB["[FromBody]"]
-                                SF["[FromForm]"]
-                                SH["[FromHeader]"]
-                                SS["[FromServices]"]
+                                direction TB
+                                SR["[FromRoute]"] ~~~ SQ["[FromQuery]"] ~~~ SB["[FromBody]"] ~~~ SF["[FromForm]"] ~~~ SH["[FromHeader]"] ~~~ SS["[FromServices]"]
                                 end
 
                                 Result -.-> Attributes
@@ -235,28 +223,26 @@ export default function Home() {
                     <div className="card validation-card">
                         <div className="mermaid-container">
                             <Mermaid chart={`
-                                graph TD
+                                %%{init: {'flowchart': {'curve': 'step', 'nodeSpacing': 20, 'rankSpacing': 30}}}%%
+                                flowchart LR
                                 Model([Bound Model]) --> DataAnnot["Data Annotations Check"]
 
                                 subgraph Attributes [Built-in Constraints]
-                                R["[Required]"]
-                                S["[StringLength]"]
-                                RA["[Range]"]
-                                E["[Email/Url/Phone]"]
-                                RG["[RegularExpression]"]
+                                direction TB
+                                R["[Required]"] ~~~ S["[StringLength]"] ~~~ RA["[Range]"] ~~~ E["[Email/Url/Phone]"] ~~~ RG["[RegularExpression]"]
                                 end
 
                                 DataAnnot -.-> Attributes
 
-                                DataAnnot --> UpdateState["Update ModelState Dictionary"]
+                                DataAnnot --> UpdateState["Update ModelState<br/>Dictionary"]
                                 UpdateState --> Decision{ModelState.IsValid?}
 
-                                Decision -- "False" --> Error["400 Bad Request / Client Error"]
-                                Decision -- "True" --> Success["Proceed to Business Logic"]
+                                Decision -- "False" --> Error["400 Bad Request /<br/>Client Error"]
+                                Decision -- "True" --> Success["Proceed to<br/>Business Logic"]
 
                                 subgraph Compare [Server vs Client]
-                                SV["Server: Safe & Secure"]
-                                CL["Client: JS/jQuery (Fast UX)"]
+                                direction TB
+                                SV["Server: Safe & Secure"] ~~~ CL["Client: JS/jQuery<br/>(Fast UX)"]
                                 end
 
                                 Success --> SV

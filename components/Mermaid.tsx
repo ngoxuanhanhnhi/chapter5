@@ -46,14 +46,25 @@ export default function Mermaid({ chart }: { chart: string }) {
             if (ref.current && chart) {
                 try {
                     const { svg } = await mermaid.render(idRef.current, chart);
-                    // Force text to be visible and correctly centered
-                    const optimizedSvg = svg
-                        .replace(/height="[^"]*"/, "")
-                        .replace(/style="[^"]*"/, 'style="max-width: 100%; height: auto; display: block; margin: auto;"');
+                    // Parse SVG string to modify root node attributes safely
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svg, "image/svg+xml");
+                    const svgElement = doc.documentElement;
                     
-                    setSvg(optimizedSvg);
-                } catch (error) {
+                    if (svgElement.tagName.toLowerCase() === 'svg') {
+                        svgElement.removeAttribute("height");
+                        svgElement.style.maxWidth = "100%";
+                        svgElement.style.height = "auto";
+                        svgElement.style.display = "block";
+                        svgElement.style.margin = "auto";
+                        setSvg(svgElement.outerHTML);
+                    } else {
+                        // fallback
+                        setSvg(svg);
+                    }
+                } catch (error: any) {
                     console.error("Mermaid Render Error:", error);
+                    setSvg(`<div style="color:red; background: white; padding: 10px; border-radius: 8px;">Mermaid Error: ${error.message || error}</div>`);
                 }
             }
         };
