@@ -12,6 +12,7 @@ export default function Home() {
                         <li><a href="#binding"><i className="fas fa-puzzle-piece"></i> Binding</a></li>
                         <li><a href="#validation"><i className="fas fa-shield-halved"></i> Validation</a></li>
                         <li><a href="#patterns"><i className="fas fa-layer-group"></i> Patterns</a></li>
+                        <li><a href="#video-tutorial"><i className="fas fa-video"></i> Video</a></li>
                     </ul>
                 </div>
             </nav>
@@ -297,6 +298,24 @@ flowchart LR
                                     reducing repetitive boilerplate code.</p>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* Video Tutorial Section */}
+                <section id="video-tutorial" className="diagram-section">
+                    <div className="section-header">
+                        <h3>Video Tutorial</h3>
+                        <p>Watch a detailed walkthrough of the ASP.NET Core Request Life Cycle and Implementation patterns.</p>
+                    </div>
+                    <div className="card video-card" style={{ padding: "0", overflow: "hidden", borderRadius: "12px", background: "#000" }}>
+                        <video 
+                            controls 
+                            width="100%" 
+                            style={{ display: "block", aspectRatio: "16/9", objectFit: "cover" }}
+                        >
+                            <source src="/0313.mp4" type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
                 </section>
             </main>
